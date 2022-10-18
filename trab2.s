@@ -1,85 +1,56 @@
-/*
-
-Vamos supor um registro (record ou struct) com os seguintes campos:
-
-Nome: 60 caracteres + final de string ('\0') (= 64 bytes)
-Gênero (sexo): 1 caractere 'M' ou 'F' (= 4 bytes)
-CPF: 11 caracteres + 3 caracteres especiais + '\0' (16 bytes)
-Data de Nascimento: dia, mes e ano (3 inteiros = 12 bytes)
-Idade: (1 inteiro = 4 bytes)
-
-Total = 64+4+16+12+4 = 100 bytes
-
-Obs: Para um alinhamento adequado de memória, cada campo deve ter uma
-quantidade de bytes que seja multiplo de 4 bytes, pois o acesso em
-arquiteturas de 32bits eh feito de 4 em 4 bytes.
-
-O codigo a seguir faz a leitura e escrito deste registro.
-
-Monte, ligue e execute o programa. Rode no GBD. Analise seu funcionamento.
-
-Depois, faça o desafio.
-
-*/
-
 .section .data
-	txtAbertura: 	.asciz 	"\n*** Leitura e Escrita de Registros ***\n"
-	txtContinuar: 	.asciz 	"\nDeseja continuar: <1> - Sim  <2>- Nao\n"
-    menuOp: 	    .asciz 	"\nSelecione uma opcao:\n <1> - Inserir Registro \n <2> - Consultar Registro\n <3> - Remover Registro \n <4> - Relatorio de Registro \n <5> - Gravar Registro \n <6> - Recuperar Registro \n <7> - Sair \n"
-	txtPedeNome:	.asciz	"\nDigite o nome: " #64Bytes
-	txtPedeDDD:	.asciz	"\nDigite o DDD: " #8bytes
+
+	txtAbertura: 		.asciz 	"\n*** Leitura e Escrita de Registros ***\n"
+	txtContinuar: 		.asciz 	"\nDeseja continuar: <1> - Sim  <2>- Nao\n"
+
+    menuOp: 	    	.asciz 	"\nSelecione uma opcao:\n <1> - Inserir Registro \n <2> - Consultar Registro\n <3> - Remover Registro \n <4> - Relatorio de Registro \n <5> - Gravar Registro \n <6> - Recuperar Registro \n <7> - Sair \n"
+
+	txtPedeNome:		.asciz	"\nDigite o nome (completo): " #64Bytes
+	txtPedeDataNasc: 	.asciz 	"\nDigite a data de nascimento: " #32Bytes
+	txtPedeIdade:		.asciz 	"\nDigite a idade: " #8bytes
+	txtPedeCPF: 		.asciz 	"\nDigite o CPF: "#16bytes
+	txtPedeDDD:			.asciz	"\nDigite o DDD: " #8bytes
 	txtPedeTelefone:	.asciz	"\nDigite o Telefone: " #16bytes
     txtPedeTipoImovel:	.asciz	"\nDigite o Tipo do Imovel (Casa ou Apartamento): " #12bytes
 
-	txtPedeDN:	.asciz	"\nDigite a o endereco\n" #100bytes
-	txtPedeRua:	.asciz	"Rua: " #64
-	txtPedeNumero:	.asciz	"Numero: " #4
-	txtPedeBairo:	.asciz	"Bairro: " #32
+	txtPedeEnderec:		.asciz	"\nDigite o endereco\n" #100bytes
+	txtPedeRua:			.asciz	"Rua: " #64bytes
+	txtPedeNumero:		.asciz	"Numero: " #4bytes
+	txtPedeBairro:		.asciz	"Bairro: " #32bytes
 
-    txtPedeNumQuartos:	.asciz	"\nDigite a quantidade quartos: <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
+    txtPedeNumQuartos:	.asciz	"\nDigite a quantidade quartos: " #4bytes + #4bytes ponteiro
+    txtPedeNumSuites:	.asciz	"\nDigite o número de suites: " #4bytes + #4bytes ponteiro
+	txtPedeBanheiro:	.asciz	"\nDigite o número de Banheiros Sociais: " #4bytes + #4bytes ponteiro
+    txtPedeCozinha:		.asciz	"\nTem Cozinha: <S> Sim <N> Nao " #4bytes + #4bytes ponteiro
+    txtPedeSala:		.asciz	"\nTem Sala : <S> Sim <N> Nao " #4bytes + #4bytes ponteiro
+    txtPedeGaragem:		.asciz	"\nTem garagem: <S> Sim <N> Nao " #4bytes + #4bytes ponteiro
 
-    txtPedeNumSuites:	.asciz	"\nDisgite o número de suites: <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
+	txtMostraReg:		.asciz	"\nRegistro Lido"
+	txtMostraNome:		.asciz	"\nNome: %s"
+	txtMostraRG:		.asciz	"\nRG: %s"
+	txtMostraCPF:		.asciz	"\nCPF: %s"
+	txtMostraDataNasc:	.asciz	"\nData de Nascimento: %d/%d/%d"
+	txtMostraTelefone:	.asciz	"\nTelefone: (%s) %s"
 
-	txtPedeBanheiro:	.asciz	"\nTem Banheiro Social: <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
-
-    txtPedeCozinha:	.asciz	"\nTem Cozinha: <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
-
-    txtPedeSala:	.asciz	"\nTem Sala : <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
-
-    txtPedeGaragem:	.asciz	"\nTem garagem: <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
-
-
-
-	txtMostraReg:	.asciz	"\nRegistro Lido"
-	txtMostraNome:	.asciz	"\nNome: %s"
-	txtMostraGenero: .asciz	"Genero: %c"
-	txtMostraRG:	.asciz	"\nRG: %s"
-	txtMostraCPF:	.asciz	"\nCPF: %s"
-	txtMostraDN:	.asciz	"\nData de Nascimento: %d/%d/%d"
-	txtMostraIdade:	.asciz	"\nIdade: %d\n"
-	txtMostraTelefone:	.asciz	"\nTelefone: (%s) %s\n"
-
-
-	tipoNum: 	.asciz 	"%d"
+	tipoNum: 			.asciz 	"%d"
 	imprimeTipoNum: 	.asciz 	"%d\n"
-	tipoChar:	.asciz	"%c"
-	tipoStr:	.asciz	"%s"
-	pulaLinha: 	.asciz 	"\n"
+	tipoChar:			.asciz	"%c"
+	tipoStr:			.asciz	"%s"
+	pulaLinha: 			.asciz 	"\n"
 
-    
-	opcao:		.int	0
+	opcao:				.int	0
 
-	tamReg:  	.int 	144
-	tamList:	.int 	0
-	RG:			.int 	0
+	tamReg:  			.int 	144
+	tamList:			.int 	0
+	CPF:				.int 	0
 
-	listaReg:	.space  4
-	reg:		.space	4
-	teste:		.space 4
-    fimLista:   .space 4
+	listaReg:			.space  4
+	reg:				.space	4
+	teste:				.space 	4
+    fimLista:   		.space 	4
 
-	NULL:		.int 0
-	posicaoAtual: .int 0
+	NULL:				.int 	0
+	posicaoAtual: 		.int	0	
 	
 .section .text
 .globl _start
