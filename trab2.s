@@ -80,13 +80,17 @@
 	opcao:		.int	0
 
 	tamReg:  	.int 	212
+
 	tamList:	.int 	0
+	posAtual:	.int	0
 	RG:			.int 	0
 
 	listaReg:	.space  4
 	reg:		.space	4
-	teste:		.space 4
-    fimLista:   .space 4
+	paiReg: 	.space	4
+	filhoReg:	.space	4
+	teste:		.space  4
+    fimLista:   .space  4
 
 	NULL:		.int 0
 	posicaoAtual: .int 0
@@ -145,17 +149,33 @@ resolveOpcoes:
         call leReg
         jmp resolveOpcoes
     _consultaReg:
+	 	call limpaScanf
+	    call consultaReg
         jmp resolveOpcoes
     _removeReg:
+		call limpaScanf
+		call removeReg
         jmp resolveOpcoes
     _imprimeRelatorio:
         call mostraReg
         jmp resolveOpcoes
     _gravaReg:
+		call gravaReg
         jmp resolveOpcoes
     _recuperaReg:
+		call recuperaReg
         jmp resolveOpcoes
 
+
+consultaReg:
+
+RET
+
+removeReg:
+RET
+
+recuperaReg:
+RET
 
 limpaScanf:
         pushl	$opcao
@@ -163,8 +183,42 @@ limpaScanf:
 		call 	scanf
 		addl    $8, %esp
         RET
-leReg:
 
+
+
+inserOrdenado:
+	movl tamList,%ebx
+	movl listaReg, %edi
+	movl %edi, paiReg
+	cmpl $0, %ebx
+	je	 _insere
+	addl $208, %edi
+	movl (%edi), %eax
+	movl %eax, filhoReg
+	movl  reg, %ecx //ECX Guarda o registro atual
+	addl $176, %ecx // numero de quartos de REG
+	_loopInsereOrdenado:
+		movl paiReg, %edi
+		movl filhoReg, %ebx
+	 	addl $176, %edi
+		addl $176, %ebx
+		movl (%ecx), %eax
+		cmpl %eax, (%ebx)
+		jle _insereAntesDoFilho
+		movl posicaoAtual,%eax 
+		cmpl %eax
+
+
+
+
+	_insere:
+		addl $208, %edi
+		movl reg, %eax
+		movl %eax, (%edi)
+		RET
+
+leReg:
+	call pegaFInal
 	pushl	tamReg
 	call	malloc
 	movl	%eax, reg
@@ -172,147 +226,149 @@ leReg:
 
 	_initLoop:
 
-	pushl	$txtPedeNome
-	call	printf
-	addl	$8, %esp
+		pushl	$txtPedeNome
+		call	printf
+		addl	$8, %esp
 
-	pushl	stdin
-	pushl	$64
-	pushl	%edi
-	call	fgets
+		pushl	stdin
+		pushl	$64
+		pushl	%edi
+		call	fgets
 
-	popl	%edi
-	addl	$8, %esp
+		popl	%edi
+		addl	$8, %esp
 
-	addl	$64, %edi
-	pushl	%edi
+		addl	$64, %edi
+		pushl	%edi
 
-	pushl	$txtPedeGenero
-	call	printf
-	addl	$4, %esp
+		pushl	$txtPedeGenero
+		call	printf
+		addl	$4, %esp
 
-	pushl	$tipoChar
-	call	scanf		
-	addl	$4, %esp
+		pushl	$tipoChar
+		call	scanf		
+		addl	$4, %esp
 
-	popl	%edi
-	addl	$4, %edi
-	pushl	%edi
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
 
-	pushl	$txtPedeRG
-	call	printf
-	addl	$4, %esp
+		pushl	$txtPedeRG
+		call	printf
+		addl	$4, %esp
 
-	pushl	$tipoStr
-	call	scanf
+		pushl	$tipoStr
+		call	scanf
 
-	addl	$4, %esp
-	popl	%edi
-	addl	$16, %edi
-	pushl	%edi
+		addl	$4, %esp
+		popl	%edi
+		addl	$16, %edi
+		pushl	%edi
 
-	pushl	$txtPedeCPF
-	call	printf
-	addl	$4, %esp
+		pushl	$txtPedeCPF
+		call	printf
+		addl	$4, %esp
 
-	pushl	$tipoStr
-	call	scanf
+		pushl	$tipoStr
+		call	scanf
 
-	addl	$4, %esp
-	popl	%edi
-	addl	$16, %edi
-	pushl	%edi
+		addl	$4, %esp
+		popl	%edi
+		addl	$16, %edi
+		pushl	%edi
 
-	pushl	$txtPedeDN
-	call	printf
+		pushl	$txtPedeDN
+		call	printf
 
-	pushl	$txtPedeDia
-	call	printf
-	addl	$8, %esp
+		pushl	$txtPedeDia
+		call	printf
+		addl	$8, %esp
 
-	pushl	$tipoNum
-	call	scanf
-	addl	$4, %esp
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
 
-	popl	%edi
-	addl	$4, %edi
-	pushl	%edi
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
 
-	pushl	$txtPedeMes
-	call	printf
-	addl	$4, %esp
+		pushl	$txtPedeMes
+		call	printf
+		addl	$4, %esp
 
-	pushl	$tipoNum
-	call	scanf
-	addl	$4, %esp
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
 
-	popl	%edi
-	addl	$4, %edi
-	pushl	%edi
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
 
-	pushl	$txtPedeAno
-	call	printf
-	addl	$4, %esp
+		pushl	$txtPedeAno
+		call	printf
+		addl	$4, %esp
 
-	pushl	$tipoNum
-	call	scanf
-	addl	$4, %esp
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
 
-	popl	%edi
-	addl	$4, %edi
-	pushl	%edi
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+		
+		pushl	$txtPedeIdade
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+
+		pushl	$txtPedeDDD
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoStr
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$8, %edi
+		pushl	%edi
+
+		pushl	$txtPedeTelefone
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoStr
+		call	scanf
+		addl	$4, %esp
+
+		popl %edi
+		addl $16, %edi
+		
+		pushl 	$txtContinuar
+		call 	printf
+
+		pushl	$opcao
+		pushl  $tipoNum
+		call 	scanf
+		addl	$12, %esp
+		movl 	opcao,%eax
+		
+		cmpl  	$1,%eax
+		je		_volta
 	
-	pushl	$txtPedeIdade
-	call	printf
-	addl	$4, %esp
-
-	pushl	$tipoNum
-	call	scanf
-	addl	$4, %esp
-
-	popl	%edi
-	addl	$4, %edi
-	pushl	%edi
-
-	pushl	$txtPedeDDD
-	call	printf
-	addl	$4, %esp
-
-	pushl	$tipoStr
-	call	scanf
-	addl	$4, %esp
-
-	popl	%edi
-	addl	$8, %edi
-	pushl	%edi
-
-	pushl	$txtPedeTelefone
-	call	printf
-	addl	$4, %esp
-
-	pushl	$tipoStr
-	call	scanf
-	addl	$4, %esp
-
-	popl %edi
-	addl $16, %edi
-	
-	pushl 	$txtContinuar
-	call 	printf
-
-	pushl	$opcao
-	pushl  $tipoNum
-	call 	scanf
-	addl	$12, %esp
-	movl 	opcao,%eax
-	
-	cmpl  	$1,%eax
-	je		_volta
 	RET
 	_volta:
 		movl    tamList, %eax
 		addl    $1, %eax
 		movl    %eax, tamList
+	
 		pushl	tamReg
 		call	malloc
 		movl	%eax, (%edi)
