@@ -1,26 +1,4 @@
-/*
 
-Vamos supor um registro (record ou struct) com os seguintes campos:
-
-Nome: 60 caracteres + final de string ('\0') (= 64 bytes)
-Gênero (sexo): 1 caractere 'M' ou 'F' (= 4 bytes)
-CPF: 11 caracteres + 3 caracteres especiais + '\0' (16 bytes)
-Data de Nascimento: dia, mes e ano (3 inteiros = 12 bytes)
-Idade: (1 inteiro = 4 bytes)
-
-Total = 64+4+16+12+4 = 100 bytes
-
-Obs: Para um alinhamento adequado de memória, cada campo deve ter uma
-quantidade de bytes que seja multiplo de 4 bytes, pois o acesso em
-arquiteturas de 32bits eh feito de 4 em 4 bytes.
-
-O codigo a seguir faz a leitura e escrito deste registro.
-
-Monte, ligue e execute o programa. Rode no GBD. Analise seu funcionamento.
-
-Depois, faça o desafio.
-
-*/
 
 .section .data
 	txtAbertura: 	.asciz 	"\n*** Leitura e Escrita de Registros ***\n"
@@ -49,6 +27,38 @@ Depois, faça o desafio.
     txtPedeGaragem:	.asciz	"\nTem garagem: <S> Sim <N> Nao " #4bytes + #4bytes do ponteiro
 
 
+	/*
+	Struct Imovel {
+
+
+		nome completo - 64 bytes
+
+		CPF 16 bytes
+		
+		celular do proprietário 12 bytes
+
+		tipo do imóvel (casa ou apartamento) 16 bytes
+
+		endereço do imóvel (
+		 cidade, 16 bytes
+		 bairro, 16 bytes
+		 rua e  32 bytes
+		 número), 4 bytes
+
+		número de quartos simples e 4 bytes
+		de suites, 4 bytes
+		se tem banheiro social, 4 bytes 
+		cozinha, 4 bytes
+		sala e 4 bytes
+		garagem 4 bytes
+
+		metragem total 4 bytes
+
+		valor do aluguel 4 bytes
+		ponteiro 4 byte
+
+	}
+	*/
 
 	txtMostraReg:	.asciz	"\nRegistro Lido"
 	txtMostraNome:	.asciz	"\nNome: %s"
@@ -69,7 +79,7 @@ Depois, faça o desafio.
     
 	opcao:		.int	0
 
-	tamReg:  	.int 	144
+	tamReg:  	.int 	212
 	tamList:	.int 	0
 	RG:			.int 	0
 
