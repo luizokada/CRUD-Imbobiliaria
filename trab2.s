@@ -3,7 +3,7 @@
 	txtAbertura: 		.asciz 	"\n*** Leitura e Escrita de Registros ***\n"
 	txtContinuar: 		.asciz 	"\nDeseja continuar: <1> - Sim  <2>- Nao\n"
 
-    menuOp: 	    	.asciz 	"\nSelecione uma opcao:\n <1> - Inserir Registro \n <2> - Consultar Registro\n <3> - Remover Registro \n <4> - Relatorio de Registro \n <5> - Gravar Registro \n <6> - Recuperar Registro \n <7> - Sair \n"
+    menuOp: 	    	.asciz 	"\nSelecione uma opcao:\nb <1> - Inserir Registro \n <2> - Consultar Registro\n <3> - Remover Registro \n <4> - Relatorio de Registro \n <5> - Gravar Registro \n <6> - Recuperar Registro \n <7> - Sair \n"
 
 	txtPedeNome:		.asciz	"\nDigite o nome (completo): " #64Bytes
 	txtPedeDataNasc: 	.asciz 	"\nDigite a data de nascimento: " #32Bytes
@@ -18,12 +18,12 @@
 	txtPedeNumero:		.asciz	"Numero: " #4bytes
 	txtPedeBairro:		.asciz	"Bairro: " #32bytes
 
-    txtPedeNumQuartos:	.asciz	"\nDigite a quantidade quartos: " #4bytes + #4bytes ponteiro
-    txtPedeNumSuites:	.asciz	"\nDigite o número de suites: " #4bytes + #4bytes ponteiro
-	txtPedeBanheiro:	.asciz	"\nDigite o número de Banheiros Sociais: " #4bytes + #4bytes ponteiro
-    txtPedeCozinha:		.asciz	"\nTem Cozinha: <S> Sim <N> Nao " #4bytes + #4bytes ponteiro
-    txtPedeSala:		.asciz	"\nTem Sala : <S> Sim <N> Nao " #4bytes + #4bytes ponteiro
-    txtPedeGaragem:		.asciz	"\nTem garagem: <S> Sim <N> Nao " #4bytes + #4bytes ponteiro
+    txtPedeNumQuartos:	.asciz	"\nDigite a quantidade quartos: " #4bytes
+    txtPedeNumSuites:	.asciz	"\nDigite o número de suites: " #4bytes 
+	txtPedeBanheiro:	.asciz	"\nDigite o número de Banheiros Sociais: " #4bytes 
+    txtPedeCozinha:		.asciz	"\nTem Cozinha: <S> Sim <N> Nao " #4bytes 
+    txtPedeSala:		.asciz	"\nTem Sala : <S> Sim <N> Nao " #4bytes 
+    txtPedeGaragem:		.asciz	"\nTem garagem: <S> Sim <N> Nao " #4bytes 
 
 	txtMostraReg:		.asciz	"\nRegistro Lido"
 	txtMostraNome:		.asciz	"\nNome: %s"
@@ -46,6 +46,8 @@
 
 	listaReg:			.space  4
 	reg:				.space	4
+	paiReg:				.space	4
+	filhoReg:				.space	4
 	teste:				.space 	4
     fimLista:   		.space 	4
 
@@ -134,6 +136,10 @@ RET
 recuperaReg:
 RET
 
+gravaReg:
+RET
+
+
 limpaScanf:
         pushl	$opcao
 		pushl   $tipoChar
@@ -144,44 +150,131 @@ limpaScanf:
 
 
 inserOrdenado:
+	movl  reg, %ecx #ECX Guarda o registro atual
+	addl $176, %ecx # numero de quartos de REG
+
 	movl tamList,%ebx
 	movl listaReg, %edi
 	movl %edi, paiReg
 	cmpl $0, %ebx
 	je	 _insere
+
+
+	addl $176, %edi #Numero de quartos do primeiro cara da lista
+	movl (%edi),%eax
+	cmpl  (%ecx),%eax
+	jle _insereComoPrimeiro #novo registro vira o primeiro da lista
+	movl paiReg,%edi
 	addl $208, %edi
+	cmpl $-1, (%edi)
+	je 	_trataPaiSemFilho
 	movl (%edi), %eax
 	movl %eax, filhoReg
-	movl  reg, %ecx //ECX Guarda o registro atual
-	addl $176, %ecx // numero de quartos de REG
+
+	movl  reg, %ecx #ECX Guarda o registro atual
+	addl $176, %eax # numero de quartos de filhos 
+
 	_loopInsereOrdenado:
 		movl paiReg, %edi
 		movl filhoReg, %ebx
-	 	addl $176, %edi
+	 	addl $208, %edi
 		addl $176, %ebx
 		movl (%ecx), %eax
 		cmpl %eax, (%ebx)
-		jle _insereAntesDoFilho
-		movl posicaoAtual,%eax 
-		cmpl %eax
+		jle _insereAntesFilho
+		movl filhoReg, %ebx 
+		movl %ebx, paiReg
+		addl $208,%ebx
+		cmpl $-1, (%ebx)
+		je _insereFim
+		movl (%ebx), %eax
+		movl %eax, filhoReg
+		jmp _loopInsereOrdenado
 
-
-
+	_insereFim:
+		movl paiReg, %edi
+		movl reg, %ebx
+		addl $208, %edi
+		movl %ebx, (%edi)
+		movl %ebx, fimLista
+		addl $208, %ebx
+		movl $-1, (%ebx)
 
 	_insere:
-		addl $208, %edi
-		movl reg, %eax
-		movl %eax, (%edi)
+		movl reg, %ecx
+		movl %ecx, listaReg
+		movl %ecx, fimLista
+		addl $208, %ecx
+		movl $-1, (%ecx)
+		movl tamList,%ebx
+		addl $1, %ebx
+		movl %ebx, tamList
 		RET
 
-leReg:
-	call pegaFInal
-	pushl	tamReg
-	call	malloc
-	movl	%eax, reg
-	movl	reg, %edi
+	_trataPaiSemFilho:
+		movl reg, %ecx
+		movl paiReg, %edi
+		addl $176, %edi
+		addl $176, %ecx
+		movl (%edi), %eax
+		cmpl %eax, (%ecx)
+		jle _insereAntes
+		movl reg, %ecx
+		movl paiReg, %edi
+		addl $208, %edi
+		movl %ecx, (%edi)
+		movl tamList,%ebx
+		addl $1, %ebx
+		movl %ebx, tamList
+		RET
 
+		_insereAntes:
+			movl reg, %ecx
+			movl paiReg, %edi
+			addl $208, %ecx
+			movl %edi, (%ecx)
+			movl reg, %ecx
+			movl %ecx, listaReg
+			movl %edi, fimLista
+			movl tamList,%ebx
+			addl $1, %ebx
+			movl %ebx, tamList
+			RET
+
+	_insereComoPrimeiro:
+		movl  reg, %ecx #ECX Guarda o registro atual
+		addl $208, %ecx # posicao pra indicar o proximo
+		movl listaReg, %edi
+		movl %edi, (%ecx) # faco o resto da lista ligar com reg
+		movl  reg, %ecx #ECX Guarda o registro atual
+		movl %ecx, listaReg
+		movl tamList,%ebx
+		addl $1, %ebx
+		movl %ebx, tamList
+		RET
+
+	_insereAntesFilho:
+		movl paiReg, %edi
+		movl filhoReg, %ebx
+		movl reg, %ecx
+		addl $208,%edi
+		movl %ecx, (%edi)
+		addl $208,%ecx
+		movl %ebx, (%ecx)
+		movl tamList,%ebx
+		addl $1, %ebx
+		movl %ebx, tamList
+		RET
+		
+
+	
+
+leReg:
 	_initLoop:
+		pushl	tamReg
+		call	malloc
+		movl	%eax, reg
+		movl	reg, %edi
 
 		pushl	$txtPedeNome
 		call	printf
@@ -198,28 +291,31 @@ leReg:
 		addl	$64, %edi
 		pushl	%edi
 
-		pushl	$txtPedeGenero
+		pushl	$txtPedeDataNasc
 		call	printf
 		addl	$4, %esp
 
-		pushl	$tipoChar
-		call	scanf		
+		popl %edi
+
+		pushl	stdin
+		pushl	$32
+		pushl	%edi	
 		addl	$4, %esp
 
 		popl	%edi
-		addl	$4, %edi
+		addl	$32, %edi
 		pushl	%edi
 
-		pushl	$txtPedeRG
+		pushl	$txtPedeIdade
 		call	printf
 		addl	$4, %esp
 
-		pushl	$tipoStr
+		pushl	$tipoNum
 		call	scanf
 
 		addl	$4, %esp
 		popl	%edi
-		addl	$16, %edi
+		addl	$8, %edi
 		pushl	%edi
 
 		pushl	$txtPedeCPF
@@ -232,57 +328,6 @@ leReg:
 		addl	$4, %esp
 		popl	%edi
 		addl	$16, %edi
-		pushl	%edi
-
-		pushl	$txtPedeDN
-		call	printf
-
-		pushl	$txtPedeDia
-		call	printf
-		addl	$8, %esp
-
-		pushl	$tipoNum
-		call	scanf
-		addl	$4, %esp
-
-		popl	%edi
-		addl	$4, %edi
-		pushl	%edi
-
-		pushl	$txtPedeMes
-		call	printf
-		addl	$4, %esp
-
-		pushl	$tipoNum
-		call	scanf
-		addl	$4, %esp
-
-		popl	%edi
-		addl	$4, %edi
-		pushl	%edi
-
-		pushl	$txtPedeAno
-		call	printf
-		addl	$4, %esp
-
-		pushl	$tipoNum
-		call	scanf
-		addl	$4, %esp
-
-		popl	%edi
-		addl	$4, %edi
-		pushl	%edi
-		
-		pushl	$txtPedeIdade
-		call	printf
-		addl	$4, %esp
-
-		pushl	$tipoNum
-		call	scanf
-		addl	$4, %esp
-
-		popl	%edi
-		addl	$4, %edi
 		pushl	%edi
 
 		pushl	$txtPedeDDD
@@ -307,12 +352,137 @@ leReg:
 
 		popl %edi
 		addl $16, %edi
+		pushl %edi
+
+		pushl	$txtPedeTipoImovel
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoStr
+		call	scanf
+		addl	$4, %esp
+
+		popl %edi
+		addl $12, %edi
+		pushl %edi
+
+		pushl	$txtPedeEnderec
+		call	printf
+
+		pushl	$txtPedeRua
+		call	printf
+		addl	$8, %esp
+
+		pushl	$tipoStr
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$64, %edi
+		pushl	%edi
+
+		pushl	$txtPedeNumero
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+
+		pushl	$txtPedeBairro
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoStr
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$32, %edi
+		pushl	%edi
+		
+		pushl	$txtPedeNumQuartos
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+		
+		pushl	$txtPedeNumSuites
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+
+		pushl	$txtPedeBanheiro
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoNum
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+
+		pushl	$txtPedeCozinha
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoChar
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+
+
+		pushl	$txtPedeSala
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoChar
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi
+
+		pushl	$txtPedeGaragem
+		call	printf
+		addl	$4, %esp
+
+		pushl	$tipoChar
+		call	scanf
+		addl	$4, %esp
+
+		popl	%edi
+		addl	$4, %edi
+		pushl	%edi		
 		
 		pushl 	$txtContinuar
 		call 	printf
 
 		pushl	$opcao
-		pushl  $tipoNum
+		pushl   $tipoNum
 		call 	scanf
 		addl	$12, %esp
 		movl 	opcao,%eax
@@ -343,96 +513,4 @@ leReg:
 mostraReg:
 
 
-	movl	reg, %edi
-
-
-	_loopDeLeitura:
-
-	pushl	$txtMostraReg
-	call	printf
-	addl	$4, %esp
-
-	pushl	%edi
-	pushl	$txtMostraNome
-	call	printf
-	addl	$4, %esp
-
-	popl	%edi
-	addl	$64, %edi
-	pushl	%edi
-
-	movl	(%edi), %eax
-	pushl	%eax
-	pushl	$txtMostraGenero
-	call	printf
-	addl	$8, %esp
-
-	popl	%edi
-	addl	$4, %edi
-	pushl	%edi
-
-	pushl	$txtMostraRG
-	call	printf
-	addl	$4, %esp
-
-	popl	%edi
-	addl	$16, %edi
-	pushl	%edi
-
-	pushl	$txtMostraCPF
-	call	printf
-	addl	$4, %esp
-
-	popl	%edi
-	addl	$16, %edi
-
-	movl	(%edi), %eax
-	addl	$4, %edi
-	movl	(%edi), %ebx
-	addl	$4, %edi
-	movl	(%edi), %ecx
-
-	pushl	%edi
-	pushl	%ecx
-	pushl	%ebx
-	pushl	%eax
-	pushl	$txtMostraDN
-	call	printf
-	addl	$16, %esp
-
-	popl	%edi
-	addl	$4, %edi
-	movl	(%edi), %eax
-
-	pushl   %edi
-	pushl	%eax
-	pushl	$txtMostraIdade
-	call	printf
-	addl	$8, %esp
-
-
-	popl    %edi
-	addl    $4,%edi
-
-	movl	%edi,%eax
-	addl    $8,%edi
-	movl	%edi,%ecx
-
-	pushl 	%ecx
-	pushl 	%eax
-	pushl 	$txtMostraTelefone
-	call 	printf
-	addl	$12, %esp
-	addl 	$16, %edi
-	movl 	posicaoAtual,%ebx
-	cmpl 	%ebx, tamList
-	je		_fimLoop
-
-	addl	$8, %esp
-	movl	(%edi),%esi
-	movl  	%esi,%edi
-	addl 	$1, %ebx
-	movl	%ebx, posicaoAtual
-	jmp 	_loopDeLeitura
-	_fimLoop:
 		RET
