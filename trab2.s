@@ -134,26 +134,27 @@ RET
 
 
 limpaScanf:
-        pushl	$opcao
-		pushl   $tipoChar
-		call 	scanf
-		addl    $8, %esp
-        RET
+	pushl	$opcao
+	pushl   $tipoChar
+	call 	scanf
+	addl    $8, %esp
+	RET
 
 inserOrdenado:
-	movl  reg, %ecx #ECX Guarda o registro atual
-	addl $176, %ecx # numero de quartos de REG
+	movl  reg, %ecx # ecx guarda o registro atual
+	addl $176, %ecx # número de quartos de REG
 
 	movl tamList,%ebx
 	movl listaReg, %edi
 	movl %edi, paiReg
+	# se for o primeiro registro, insere normal
 	cmpl $0, %ebx
 	je	 _insere
 
-	addl $176, %edi #Numero de quartos do primeiro cara da lista
+	addl $176, %edi # número de quartos do primeiro cara da lista
 	movl (%edi),%eax
 	cmpl  (%ecx),%eax
-	jle _insereComoPrimeiro #novo registro vira o primeiro da lista
+	jle _insereComoPrimeiro # novo registro vira o primeiro da lista
 	movl paiReg,%edi
 	addl $208, %edi
 	cmpl $-1, (%edi)
@@ -161,8 +162,8 @@ inserOrdenado:
 	movl (%edi), %eax
 	movl %eax, filhoReg
 
-	movl  reg, %ecx #ECX Guarda o registro atual
-	addl $176, %eax # numero de quartos de filhos 
+	movl  reg, %ecx # ecx guarda o registro atual
+	addl $176, %eax # número de quartos de filhos 
 
 	_loopInsereOrdenado:
 		movl paiReg, %edi
@@ -233,9 +234,9 @@ inserOrdenado:
 
 	_insereComoPrimeiro:
 		movl  reg, %ecx #ECX Guarda o registro atual
-		addl $208, %ecx # posicao pra indicar o proximo
+		addl $208, %ecx # posição pra indicar o próximo
 		movl listaReg, %edi
-		movl %edi, (%ecx) # faco o resto da lista ligar com reg
+		movl %edi, (%ecx) # faz o resto da lista ligar com reg
 		movl  reg, %ecx #ECX Guarda o registro atual
 		movl %ecx, listaReg
 		movl tamList,%ebx
