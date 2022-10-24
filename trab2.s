@@ -1,11 +1,10 @@
 .section .data
-
 	txtAbertura: 		.asciz 	"\n*** Leitura e Escrita de Registros ***\n"
 	txtContinuar: 		.asciz 	"\nDeseja continuar: <1> - Sim  <2>- Nao\n"
 
-    menuOp: 	    	.asciz 	"\nSelecione uma opcao:\nb <1> - Inserir Registro \n <2> - Consultar Registro\n <3> - Remover Registro \n <4> - Relatorio de Registro \n <5> - Gravar Registro \n <6> - Recuperar Registro \n <7> - Sair \n"
+    menuOp: 	    	.asciz 	"\nSelecione uma opcao:\n <1> - Inserir Registro \n <2> - Consultar Registro\n <3> - Remover Registro \n <4> - Relatorio de Registro \n <5> - Gravar Registro \n <6> - Recuperar Registro \n <7> - Sair \n"
 
-	txtPedeNome:		.asciz	"\nDigite o nome (completo): " #64Bytes
+	txtPedeNome:		.asciz	"\nDigite o nome completo: " #64Bytes
 	txtPedeDataNasc: 	.asciz 	"\nDigite a data de nascimento: " #32Bytes
 	txtPedeIdade:		.asciz 	"\nDigite a idade: " #8bytes
 	txtPedeCPF: 		.asciz 	"\nDigite o CPF: "#16bytes
@@ -20,7 +19,7 @@
 
     txtPedeNumQuartos:	.asciz	"\nDigite a quantidade quartos: " #4bytes
     txtPedeNumSuites:	.asciz	"\nDigite o número de suites: " #4bytes 
-	txtPedeBanheiro:	.asciz	"\nDigite o número de Banheiros Sociais: " #4bytes 
+	txtPedeBanheiro:	.asciz	"\nDigite o número de banheiros sociais: " #4bytes 
     txtPedeCozinha:		.asciz	"\nTem Cozinha: <S> Sim <N> Nao " #4bytes 
     txtPedeSala:		.asciz	"\nTem Sala : <S> Sim <N> Nao " #4bytes 
     txtPedeGaragem:		.asciz	"\nTem garagem: <S> Sim <N> Nao " #4bytes 
@@ -47,7 +46,7 @@
 	listaReg:			.space  4
 	reg:				.space	4
 	paiReg:				.space	4
-	filhoReg:				.space	4
+	filhoReg:			.space	4
 	teste:				.space 	4
     fimLista:   		.space 	4
 
@@ -57,19 +56,15 @@
 .section .text
 .globl _start
 _start:
-
 	pushl	$txtAbertura
 	call	printf
 	addl	$4, %esp
 
 	call	resolveOpcoes
 	
-
 fim:
 	pushl $0
 	call exit
-
-
 
 resolveOpcoes:
     pushl   $menuOp
@@ -125,9 +120,7 @@ resolveOpcoes:
 		call recuperaReg
         jmp resolveOpcoes
 
-
 consultaReg:
-
 RET
 
 removeReg:
@@ -141,29 +134,27 @@ RET
 
 
 limpaScanf:
-        pushl	$opcao
-		pushl   $tipoChar
-		call 	scanf
-		addl    $8, %esp
-        RET
-
-
+	pushl	$opcao
+	pushl   $tipoChar
+	call 	scanf
+	addl    $8, %esp
+	RET
 
 inserOrdenado:
-	movl  reg, %ecx #ECX Guarda o registro atual
-	addl $176, %ecx # numero de quartos de REG
+	movl  reg, %ecx # ecx guarda o registro atual
+	addl $176, %ecx # número de quartos de REG
 
 	movl tamList,%ebx
 	movl listaReg, %edi
 	movl %edi, paiReg
+	# se for o primeiro registro, insere normal
 	cmpl $0, %ebx
 	je	 _insere
 
-
-	addl $176, %edi #Numero de quartos do primeiro cara da lista
+	addl $176, %edi # número de quartos do primeiro cara da lista
 	movl (%edi),%eax
 	cmpl  (%ecx),%eax
-	jle _insereComoPrimeiro #novo registro vira o primeiro da lista
+	jle _insereComoPrimeiro # novo registro vira o primeiro da lista
 	movl paiReg,%edi
 	addl $208, %edi
 	cmpl $-1, (%edi)
@@ -171,8 +162,8 @@ inserOrdenado:
 	movl (%edi), %eax
 	movl %eax, filhoReg
 
-	movl  reg, %ecx #ECX Guarda o registro atual
-	addl $176, %eax # numero de quartos de filhos 
+	movl  reg, %ecx # ecx guarda o registro atual
+	addl $176, %eax # número de quartos de filhos 
 
 	_loopInsereOrdenado:
 		movl paiReg, %edi
@@ -243,9 +234,9 @@ inserOrdenado:
 
 	_insereComoPrimeiro:
 		movl  reg, %ecx #ECX Guarda o registro atual
-		addl $208, %ecx # posicao pra indicar o proximo
+		addl $208, %ecx # posição pra indicar o próximo
 		movl listaReg, %edi
-		movl %edi, (%ecx) # faco o resto da lista ligar com reg
+		movl %edi, (%ecx) # faz o resto da lista ligar com reg
 		movl  reg, %ecx #ECX Guarda o registro atual
 		movl %ecx, listaReg
 		movl tamList,%ebx
@@ -266,9 +257,6 @@ inserOrdenado:
 		movl %ebx, tamList
 		RET
 		
-
-	
-
 leReg:
 	_initLoop:
 		pushl	tamReg
@@ -507,10 +495,5 @@ leReg:
 		addl    $8, %esp
 		jmp _initLoop
 
-
-
-
 mostraReg:
-
-
-		RET
+	RET
