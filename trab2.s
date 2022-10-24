@@ -133,6 +133,7 @@ gravaReg:
 RET
 
 
+# fica o /n 
 limpaScanf:
 	pushl	$opcao
 	pushl   $tipoChar
@@ -165,6 +166,7 @@ inserOrdenado:
 	movl  reg, %ecx # ecx guarda o registro atual
 	addl $176, %eax # número de quartos de filhos 
 
+	# se entrou aqui significa que o reg nao entra antes do pai
 	_loopInsereOrdenado:
 		movl paiReg, %edi
 		movl filhoReg, %ebx
@@ -191,6 +193,7 @@ inserOrdenado:
 		addl $208, %ebx
 		movl $-1, (%ebx)
 
+	# quando é o primeiro elemento
 	_insere:
 		movl reg, %ecx
 		movl %ecx, listaReg
@@ -276,6 +279,7 @@ leReg:
 		popl	%edi
 		addl	$8, %esp
 
+		# faz o ponteiro andar pro final do campo no momento
 		addl	$64, %edi
 		pushl	%edi
 
@@ -466,6 +470,8 @@ leReg:
 		addl	$4, %edi
 		pushl	%edi		
 		
+		# fazer inserção ordenada
+
 		pushl 	$txtContinuar
 		call 	printf
 
