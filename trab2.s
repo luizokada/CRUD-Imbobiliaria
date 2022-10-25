@@ -419,16 +419,16 @@ leRegistro:
 
 		# faz o ponteiro andar pro final do campo
 		addl	$32, %edi
-		pushl	%edi
 		
 		pushl	$txtPedeNumQuartos
 		call	printf
 		addl	$4, %esp # limpa o(s) pushl
 
+		pushl	%edi
 		pushl	$tipoNum
 		call	scanf
-		addl	$4, %esp # limpa o(s) pushl
 
+		addl	$4, %esp # limpa o(s) pushl
 		popl	%edi
 
 		# faz o ponteiro andar pro final do campo
@@ -461,22 +461,21 @@ leRegistro:
 
 		# faz o ponteiro andar pro final do campo
 		addl	$4, %edi
-		pushl	%edi
 
 		pushl	$txtPedeCozinha
 		call	printf
 		addl	$4, %esp # limpa o(s) pushl
 
 		pushl	$tipoChar
+		pushl	%edi
 		call	scanf
-		addl	$4, %esp # limpa o(s) pushl
 
 		popl	%edi
+		addl	$4, %esp # limpa o(s) pushl
 		
 		# faz o ponteiro andar pro final do campo
 		addl	$4, %edi
 		pushl	%edi
-
 
 		pushl	$txtPedeSala
 		call	printf

@@ -1,5 +1,10 @@
 # CRUD-Imobiliária
 
+### Como compilar:
+>   as -32 trab2.s -o trab2.o
+>   ld -m elf_i386 trab2.o -l c -dynamic-linker /lib/ld-linux.so.2 -o trab2
+>   ./trab2
+
 Implementar em linguagem Gnu Assembly para plataforma 32bits, um programa de Controle de Cadastro de Imobiliário para locação, usando exclusivamente as instruções e recursos de programação passados durante as aulas. O programa deve executar as funcionalidades de cadastro de uma imobiliária. As seguintes funcionalidades devem ser implementadas: inserção, remoção, consulta, gravar cadastro, recuperar cadastro e relatório de registros. Deve-se usar uma lista encadeada dinâmica (com malloc) para armazenar os registros dos imóveis ordenados por número de cômodos.
 
 Para cada registro de imóvel deve-se ter as seguintes informações:
