@@ -3,15 +3,15 @@
 Implementar em linguagem Gnu Assembly para plataforma 32bits, um programa de Controle de Cadastro de Imobiliário para locação, usando exclusivamente as instruções e recursos de programação passados durante as aulas. O programa deve executar as funcionalidades de cadastro de uma imobiliária. As seguintes funcionalidades devem ser implementadas: inserção, remoção, consulta, gravar cadastro, recuperar cadastro e relatório de registros. Deve-se usar uma lista encadeada dinâmica (com malloc) para armazenar os registros dos imóveis ordenados por número de cômodos.
 
 Para cada registro de imóvel deve-se ter as seguintes informações:
-- nome completo
+- Nome completo
 
 - CPF e celular do proprietário
 
-- tipo do imóvel (casa ou apartamento) 
+- Tipo do imóvel (casa ou apartamento) 
 
-- endereço do imóvel (cidade, bairro, rua e número),
+- Endereço do imóvel (cidade, bairro, rua e número),
 
-- número de quartos simples e de suites, se tem banheiro social, cozinha, sala e garagem 
+- Número de quartos simples e de suites, se tem banheiro social, cozinha, sala e garagem 
 
 - metragem total
 
