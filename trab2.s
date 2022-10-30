@@ -184,13 +184,13 @@ removeReg:
 	addl 	$256, %edi
 	movl 	(%edi), %ebx
 	movl	%ebx, filho
-	movl 	regParaRemover, %eax
+	movl 	regParaRemover, %eax #Guarda o "indece" de remocao
 	subl 	$1, %eax
 	movl 	%eax, regParaRemover
 
 	_loopRemove:
-		movl 	regParaRemover, %eax
-		cmpl 	%eax, iteracao
+		movl 	iteracao, %eax
+		cmpl 	%eax, regParaRemover
 		je		_removeMeio #Remove no meio
 		movl 	pai, %edi
 		movl 	filho, %ebx
@@ -200,6 +200,7 @@ removeReg:
 		cmpl   	%ebx,%ecx #Verifica se da para avanca na lista
 		je 		_erroRemove
 		addl 	$1,	%eax	#incrementa a iteracao
+		movl 	%eax, iteracao
 		movl 	%ebx, pai	#Filho passa a ser pai
 		addl	$256, %ebx	#Pega o filho do filho
 		movl	(%ebx), %ecx	
@@ -214,7 +215,7 @@ removeReg:
 		addl 	$256, %edi
 		movl 	(%edi), %eax
 		movl 	%eax, cabecaLista
-		#FREEEEE
+		#Usar o free
 		RET
 
 	_removeMeio:
