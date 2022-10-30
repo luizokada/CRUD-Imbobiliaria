@@ -194,18 +194,16 @@ insereOrdenado:
 	movl 	(%edi),%eax
 	cmpl  	%eax,(%ecx)
 	jle 	_insereComoPrimeiro # novo registro vira o primeiro da lista
-
 	movl	pai,%edi
 	addl 	$256, %edi
 	cmpl 	$NULL, (%edi)
 	je 		_insereFim
+	movl	pai,%edi
+	addl 	$256, %edi
 	movl 	(%edi), %eax
 	movl 	%eax, filho
-
 	movl  	inicioRegistro, %ecx # ecx guarda o registro atual
-	call	printTeste
-	
-
+	addl 	$232, %ecx # número de quartos de REG
 	_loopInsereOrdenado:
 		movl 	pai, %edi
 		movl 	filho, %ebx
@@ -244,7 +242,6 @@ insereOrdenado:
 	
 
 	_insereComoPrimeiro:
-		call	printTeste
 		movl	inicioRegistro, %ecx #ECX Guarda o registro atual
 		addl	$256, %ecx # posição pra indicar o próximo
 		movl	cabecaLista, %edi
@@ -258,7 +255,6 @@ insereOrdenado:
 
 	
 	_insereFim:
-		call	printTeste
 		movl 	pai, %edi
 		movl 	inicioRegistro, %ebx
 		addl 	$256, %edi
@@ -693,33 +689,8 @@ leRegistro:
 		movl   	%eax, (%edi)
 
 		call 	insereOrdenado
+		RET
 
-		pushl 	$txtContinuar
-		call 	printf
-		addl	$4, %esp # limpa o(s) pushl
-
-		pushl	$opcao
-		pushl   $tipoNum
-		call 	scanf
-
-		addl	$8, %esp # limpa o(s) pushl
-		movl 	opcao,%eax
-		#
-		
-
-		cmpl  	$1,%eax
-		je		_volta
-
-		
-	
-	RET
-	_volta:
-		pushl	$limpaScan
-		pushl   $tipoChar
-		call 	scanf
-		addl    $8, %esp # limpa o(s) pushl
-		jmp _initLoopLeitura
-			
 
 mostraReg:
 	movl 	cabecaLista, %edi
