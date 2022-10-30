@@ -17,7 +17,7 @@
     txtPedeTipoImovel:	.asciz	"\nDigite o tipo do imóvel (casa ou apartamento): " #12bytes
 
 	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " #12bytes
-
+	txtPedeRegParaConsultar: .asciz "\nDigite o numero de comodos que quer consultar: "
 
 
 	txtPedeEndereco:	.asciz	"\nDigite o endereço\n" #100bytes
@@ -62,7 +62,7 @@
 	pulaLinha: 			.asciz 	"\n"
 
 	opcao:				.int	0
-	regParaRemover:		.int	0
+	regParaRemover:		.int	0 	# número do registro que será removido. será comparado com os índices
 	limpaScan:			.space	10
 
 	tamanhoRegistro:  	.int 	260 # tamanho do registro
@@ -72,13 +72,16 @@
 	inicioRegistro:		.space	4	# campo inicial do registro que está sendo inserido no momento
 	pai:				.space	4	# registro antecessor 
 	filho:				.space	4	# registro sucessor
-	enderecoRemove:		.space 	4	#registro para remover
+	enderecoRemove:		.space 	4	# endereço do registro para remover
     fimLista:   		.space 	4	# último endereço do registro
 
 	NULL:				.int 	0
 	posicaoAtual: 		.int	0	
-	iteracao:			.int	0
+	iteracao:			.int	0	# número da iteração atual, será usada na remoção
 	
+	comodosParaConsultar .int	0
+	totalComodos		.int	0
+
 .section .text
 .globl _start
 _start:
@@ -162,6 +165,42 @@ resolveOpcoes:
         jmp resolveOpcoes
 
 consultaReg:
+	pushl $txtPedeRegParaConsultar
+	call printf
+	addl $4, %esp
+
+	pushl $comodosParaConsultar
+	pushl $tipoNum
+	call scanf
+	addl $8, %esp
+
+	# acredito eu que pega o campo de quarto
+	addl $232, %edi
+
+	# soma o número de quartos no eax
+	movl (%edi), %eax
+	addl $4, %edi
+	# soma o número de suítes no eax
+	addl (%edi), %eax
+	addl $4, %edi
+	# soma o número de banheiros no eax
+	addl (%edi), %eax
+	addl $4, %edi
+	# soma o número de cozinhas no eax
+	addl (%edi), %eax
+	addl $4, %edi
+	# soma o número de salas no eax
+	addl (%edi), %eax
+	addl $4, %edi
+
+	movl %eax, totalComodos
+
+	# se a quantidade de comodos for igual ao que ele quer, mostra o registro completo
+	cmpl totalComodos, comodosParaConsultar
+	call mostraReg
+
+	
+
 RET
 
 removeReg:
@@ -170,52 +209,58 @@ removeReg:
 	call	printf
 	addl	$4,%esp
 	
+	# número do registro que será removido
 	pushl	$regParaRemover
 	pushl 	$tipoNum
 	call	scanf
 	addl	$8,%esp
 
+	# verifica se é o primeiro índice
 	movl 	regParaRemover, %eax
 	cmpl	$0,%eax
 	je		_removePrimeiro
+
+	# começa as iterações
 	movl 	$0, iteracao
 	movl 	cabecaLista, %edi
 	movl 	%edi, pai
-	addl 	$256, %edi
+	addl 	$256, %edi # move o ponteiro pro próximo elemento
 	movl 	(%edi), %ebx
 	movl	%ebx, filho
-	movl 	regParaRemover, %eax #Guarda o "indece" de remocao
-	subl 	$1, %eax
+	movl 	regParaRemover, %eax # guarda o "índice" do registro que será removido
+	subl 	$1, %eax	
 	movl 	%eax, regParaRemover
 
 	_loopRemove:
 		movl 	iteracao, %eax
 		cmpl 	%eax, regParaRemover
-		je		_removeMeio #Remove no meio
+		je		_removeMeio # remove no meio
 		movl 	pai, %edi
 		movl 	filho, %ebx
 		movl 	$NULL, %ecx
 
 	
-		cmpl   	%ebx,%ecx #Verifica se da para avanca na lista
+		cmpl   	%ebx,%ecx # verifica se da para avança na lista
 		je 		_erroRemove
-		addl 	$1,	%eax	#incrementa a iteracao
+		addl 	$1,	%eax	# incrementa a iteracao
 		movl 	%eax, iteracao
-		movl 	%ebx, pai	#Filho passa a ser pai
-		addl	$256, %ebx	#Pega o filho do filho
+		movl 	%ebx, pai	# filho passa a ser pai
+		addl	$256, %ebx	# pega o filho do filho
 		movl	(%ebx), %ecx	
-		movl 	%ecx, filho	#Pega o filho do filho e faz ele ser pai
+		movl 	%ecx, filho	# pega o filho do filho e faz ele ser pai
 		jmp		_loopRemove
 		RET
 
 
 	_removePrimeiro:
 		movl	cabecaLista, %edi
-		movl 	%edi, enderecoRemove #usar o free nessa variavel depois de mudar a cabevca
+		movl 	%edi, enderecoRemove # usar o free nessa variável depois de mudar a cabeça
 		addl 	$256, %edi
 		movl 	(%edi), %eax
 		movl 	%eax, cabecaLista
-		#Usar o free
+
+		# pushl	$enderecoRemove
+		# call 	free
 		RET
 
 	_removeMeio:
@@ -228,7 +273,10 @@ removeReg:
 		movl	filho, %edi
 		addl	$256,%ecx
 		movl	%edi, (%ecx)
-		#free no endereco de remove
+		
+		# pushl	$enderecoRemove
+		# call 	free
+
 		movl 	$NULL,%ebx
 		cmpl 	%eax, %ebx
 		je		_atualizaFimLista
@@ -251,7 +299,7 @@ gravaReg:
 RET
 
 
-# limpa o scanf por conta dos |n que sobram na pilha
+# limpa o scanf por conta dos \n que sobram na pilha
 limpaScanf:
 	pushl	$limpaScan
 	pushl   $tipoChar
