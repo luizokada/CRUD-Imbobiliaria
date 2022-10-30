@@ -16,6 +16,10 @@
 	txtPedeTelefone:	.asciz	"\nDigite o telefone: " #16bytes
     txtPedeTipoImovel:	.asciz	"\nDigite o tipo do imóvel (casa ou apartamento): " #12bytes
 
+	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " #12bytes
+
+
+
 	txtPedeEndereco:	.asciz	"\nDigite o endereço\n" #100bytes
 	txtPedeRua:			.asciz	"Rua: " #64bytes
 	txtPedeNumero:		.asciz	"Número: " #4bytes
@@ -45,6 +49,7 @@
 	txtMostraCozinha:	.asciz	"\nCozinha: %s"
 	txtMostraSala:		.asciz	"\nSala: %s"
 	txtMostraGaragem:	.asciz	"\nGaragem: %s"
+	txtMostraErroRemove:	.asciz	"\Registro Nao Existe \n"
 	
 	testando:			.asciz	"\nTESTANDO"
 	testandoNum:		.asciz	"\n%d\n"
@@ -57,17 +62,17 @@
 	pulaLinha: 			.asciz 	"\n"
 
 	opcao:				.int	0
+	regParaRemover:		.int	0
 	limpaScan:			.space	10
 
 	tamanhoRegistro:  	.int 	260 # tamanho do registro
 	tamanhoLista:		.int 	0	# tamanho da lista
-	CPF:				.int 	0
 
 	cabecaLista:		.space  4	# cabeça da lista
-	inicioRegistro:				.space	4	# campo inicial do registro que está sendo inserido no momento
+	inicioRegistro:		.space	4	# campo inicial do registro que está sendo inserido no momento
 	pai:				.space	4	# registro antecessor 
 	filho:				.space	4	# registro sucessor
-	teste:				.space 	4	
+	enderecoRemove:		.space 	4	#registro para remover
     fimLista:   		.space 	4	# último endereço do registro
 
 	NULL:				.int 	0
@@ -160,7 +165,83 @@ consultaReg:
 RET
 
 removeReg:
-RET
+	call	mostraReg
+	pushl	$txtPedeRegParaRemover
+	call	printf
+	addl	$4,%esp
+	
+	pushl	$regParaRemover
+	pushl 	$tipoNum
+	call	scanf
+	addl	$8,%esp
+
+	movl 	regParaRemover, %eax
+	cmpl	$0,%eax
+	je		_removePrimeiro
+	movl 	$0, iteracao
+	movl 	cabecaLista, %edi
+	movl 	%edi, pai
+	addl 	$256, %edi
+	movl 	(%edi), %ebx
+	movl	%ebx, filho
+	movl 	regParaRemover, %eax
+	subl 	$1, %eax
+	movl 	%eax, regParaRemover
+
+	_loopRemove:
+		movl 	regParaRemover, %eax
+		cmpl 	%eax, iteracao
+		je		_removeMeio #Remove no meio
+		movl 	pai, %edi
+		movl 	filho, %ebx
+		movl 	$NULL, %ecx
+
+	
+		cmpl   	%ebx,%ecx #Verifica se da para avanca na lista
+		je 		_erroRemove
+		addl 	$1,	%eax	#incrementa a iteracao
+		movl 	%ebx, pai	#Filho passa a ser pai
+		addl	$256, %ebx	#Pega o filho do filho
+		movl	(%ebx), %ecx	
+		movl 	%ecx, filho	#Pega o filho do filho e faz ele ser pai
+		jmp		_loopRemove
+		RET
+
+
+	_removePrimeiro:
+		movl	cabecaLista, %edi
+		movl 	%edi, enderecoRemove #usar o free nessa variavel depois de mudar a cabevca
+		addl 	$256, %edi
+		movl 	(%edi), %eax
+		movl 	%eax, cabecaLista
+		#FREEEEE
+		RET
+
+	_removeMeio:
+		movl	filho, %edi
+		movl	%edi, enderecoRemove
+		addl	$256,%edi
+		movl	(%edi), %eax
+		movl	%eax,filho
+		movl	pai, %ecx
+		movl	filho, %edi
+		addl	$256,%ecx
+		movl	%edi, (%ecx)
+		#free no endereco de remove
+		movl 	$NULL,%ebx
+		cmpl 	%eax, %ebx
+		je		_atualizaFimLista
+		RET
+	_atualizaFimLista:
+		movl	pai,%edi
+		movl	%edi, fimLista
+		RET
+	_erroRemove:
+		pushl	$txtMostraErroRemove
+		call	printf
+		addl	$4,%esp
+		RET
+
 
 recuperaReg:
 RET
