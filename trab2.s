@@ -6,20 +6,15 @@
 
 	txtPedeNome:		.asciz	"\nDigite o nome completo: " #64Bytes
 	txtPedeDataNasc: 	.asciz 	"\nDigite a data de nascimento: \n" #12Bytes
-	txtPedeDia:			.asciz	"Dia: " #64bytes
+	txtPedeDia:			.asciz	"Dia: " #4bytes
 	txtPedeMes:			.asciz	"Mes: " #4bytes
-	txtPedeAno:			.asciz	"Ano: " #32bytes
+	txtPedeAno:			.asciz	"Ano: " #4bytes
 	txtPedeIdade:		.asciz 	"\nDigite a idade: " #4bytes
 	txtPedeCPF: 		.asciz 	"\nDigite o CPF: "#16bytes
 	txtPedeMetragem:	.asciz	"\nDigite a metragem Total: " #4bytes
 	txtPedeDDD:			.asciz	"\nDigite o DDD: " #4bytes
 	txtPedeTelefone:	.asciz	"\nDigite o telefone: " #16bytes
     txtPedeTipoImovel:	.asciz	"\nDigite o tipo do imóvel (casa ou apartamento): " #12bytes
-
-	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " #12bytes
-	txtPedeRegParaConsultar: .asciz "\nDigite o numero de comodos que quer consultar: "
-
-
 	txtPedeEndereco:	.asciz	"\nDigite o endereço\n" #100bytes
 	txtPedeRua:			.asciz	"Rua: " #64bytes
 	txtPedeNumero:		.asciz	"Número: " #4bytes
@@ -30,6 +25,13 @@
     txtPedeCozinha:		.asciz	"\nTem cozinha? <S> Sim <N> Não " #4bytes 
     txtPedeSala:		.asciz	"\nTem sala? <S> Sim <N> Não " #4bytes 
     txtPedeGaragem:		.asciz	"\nTem garagem? <S> Sim <N> Não " #4bytes 
+	
+
+	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " #12bytes
+	txtPedeRegParaConsultar: .asciz "\nDigite o numero de comodos que quer consultar: "
+
+
+	
 
 	txtMostraRegistro:	.asciz	"\nRegistro %d: \n "
 	txtMostraReg:		.asciz	"\nRegistro lido: "
@@ -68,19 +70,20 @@
 	tamanhoRegistro:  	.int 	260 # tamanho do registro
 	tamanhoLista:		.int 	0	# tamanho da lista
 
-	cabecaLista:		.space  4	# cabeça da lista
-	inicioRegistro:		.space	4	# campo inicial do registro que está sendo inserido no momento
-	pai:				.space	4	# registro antecessor 
-	filho:				.space	4	# registro sucessor
-	enderecoRemove:		.space 	4	# endereço do registro para remover
-    fimLista:   		.space 	4	# último endereço do registro
+	cabecaLista:			.space  4	# cabeça da lista
+	inicioRegistro:			.space	4	# campo inicial do registro que está sendo inserido no momento
+	registroConsultaAtual:	.space 4 # registro que está sendo consultado
+	pai:					.space	4	# registro antecessor 
+	filho:					.space	4	# registro sucessor
+	enderecoRemove:			.space 	4	# endereço do registro para remover
+    fimLista:   			.space 	4	# último endereço do registro
 
 	NULL:				.int 	0
 	posicaoAtual: 		.int	0	
 	iteracao:			.int	0	# número da iteração atual, será usada na remoção
 	
-	comodosParaConsultar .int	0
-	totalComodos		.int	0
+	comodosParaConsultar: .int	0
+	totalComodos:		.int	0
 
 .section .text
 .globl _start
@@ -163,45 +166,229 @@ resolveOpcoes:
     _recuperaReg:
 		call recuperaReg
         jmp resolveOpcoes
+TESTENUM:
+		pushl	%eax
+		pushl	$imprimeTipoNum
+		call 	printf
+		addl 	$8, %esp
+		RET
 
 consultaReg:
-	pushl $txtPedeRegParaConsultar
-	call printf
-	addl $4, %esp
+	pushl 	$txtPedeRegParaConsultar
+	call 	printf
+	addl 	$4, %esp
 
-	pushl $comodosParaConsultar
-	pushl $tipoNum
-	call scanf
-	addl $8, %esp
+	pushl 	$comodosParaConsultar
+	pushl 	$tipoNum
+	call 	scanf
+	addl 	$8, %esp
+	movl 	cabecaLista, %edi
+	movl 	$NULL, %ebx
+	cmpl 	%ebx, (%edi)
+	je		_fimConsulta
 
-	# acredito eu que pega o campo de quarto
-	addl $232, %edi
+	movl 	%edi, registroConsultaAtual
 
-	# soma o número de quartos no eax
-	movl (%edi), %eax
-	addl $4, %edi
-	# soma o número de suítes no eax
-	addl (%edi), %eax
-	addl $4, %edi
-	# soma o número de banheiros no eax
-	addl (%edi), %eax
-	addl $4, %edi
-	# soma o número de cozinhas no eax
-	addl (%edi), %eax
-	addl $4, %edi
-	# soma o número de salas no eax
-	addl (%edi), %eax
-	addl $4, %edi
+	_loopConsultaRegistro:
 
-	movl %eax, totalComodos
+		movl registroConsultaAtual, %edi
+		movl $0, %eax
 
-	# se a quantidade de comodos for igual ao que ele quer, mostra o registro completo
-	cmpl totalComodos, comodosParaConsultar
-	call mostraReg
+		# acredito eu que pega o campo de quarto
+		addl 	$232, %edi
 
-	
+		# soma o número de quartos no eax
+		movl 	(%edi), %eax
+		call	TESTENUM
+		addl 	$4, %edi
+		# soma o número de suítes no eax
+		addl 	(%edi), %eax
+		call 	TESTENUM
+		addl 	$4, %edi
+		# soma o número de banheiros no eax
+		addl 	(%edi), %eax
+		call 	TESTENUM
+		addl 	$4, %edi
+		# soma o número de cozinhas no eax
+		addl 	(%edi), %eax
+		call 	TESTENUM
+		addl 	$4, %edi
+		# soma o número de salas no eax
+		addl 	(%edi), %eax
+		call 	TESTENUM
+		addl 	$4, %edi
+
+		movl 	%eax, totalComodos
+		call	TESTENUM
+
+		pushl	comodosParaConsultar
+		pushl	$imprimeTipoNum
+		call 	printf
+		addl 	$8, %esp
+
+
+		# se a quantidade de comodos for igual ao que ele quer, mostra o registro completo
+		cmpl 	%eax, comodosParaConsultar
+		jge 	_mostraRegistroConsulta
+
+		_trocaReg:
+			movl 	registroConsultaAtual, %edi
+			addl 	$256, %edi
+			movl 	$NULL, %ebx
+			cmpl	%ebx, (%edi)
+			je		_fimConsulta
+
+			movl	(%edi), %ecx
+			movl	%ecx, registroConsultaAtual
+			jmp		_loopConsultaRegistro
+
+	_fimConsulta:
+		RET
 
 RET
+
+_mostraRegistroConsulta:
+	call 	mostraRegistroConsulta
+	jmp		_trocaReg
+
+mostraRegistroConsulta:
+	movl registroConsultaAtual, %edi
+
+	#NOME
+	pushl	%edi
+	pushl 	$txtMostraNome
+	call 	printf
+	addl 	$8,%esp
+	addl 	$64, %edi #vai para o Próximo Campo
+
+	#Nascimento
+	movl 	(%edi), %eax
+	addl	$4, %edi
+	movl 	(%edi), %ebx
+	addl	$4, %edi
+	movl 	(%edi), %ecx
+
+	pushl 	%ecx
+	pushl 	%ebx
+	pushl 	%eax
+	pushl 	$txtMostraDataNasc
+	call	printf
+	addl	$16, %esp
+	addl	$4, %edi #vai para o Próximo Campo
+	
+	#Idade
+	movl 	(%edi), %eax
+	pushl	%eax
+	pushl	$txtMostraIdade
+	call	printf
+	addl 	$8, %esp
+
+	addl 	$4, %edi
+
+	#CPF
+	pushl	%edi
+	pushl 	$txtMostraCPF
+	call	printf
+	addl	$8,%esp
+	addl	$16,%edi #vai para o Próximo Campo
+
+	#METRAGEM
+	movl 	(%edi), %eax
+	pushl 	%eax
+	pushl	$txtMostraMetragem
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi #vai para o Próximo Campo
+
+	#DDD
+
+	pushl 	%edi
+	pushl 	$txtMostraDDD
+	call	printf
+	addl	$8, %esp
+
+	addl	$4, %edi #vai para o Próximo Campo
+
+	#TELEFONE
+
+	pushl 	%edi
+	pushl 	$txtMostraTelefone
+	call	printf
+	addl	$8, %esp
+
+	addl	$16, %edi #vai para o Próximo Campo
+
+	#TIPO IMOVEL 
+
+	pushl	%edi
+	pushl 	$txtMostraTipoImovel
+	call	printf
+	addl	$8, %esp
+
+	addl	$12, %edi #vai para o Próximo Campo
+
+	#ENDERECO
+
+	movl 	%edi, %eax
+	addl	$64, %edi
+	movl 	(%edi), %ebx
+	addl	$4, %edi
+	movl 	%edi, %ecx
+
+	pushl 	%ecx
+	pushl 	%ebx
+	pushl 	%eax
+	pushl 	$txtMostraEndereco
+	call	printf
+	addl	$16, %esp
+	addl	$32, %edi #vai para o Próximo Campo
+
+	
+	#QUARTO
+	pushl 	(%edi)
+	pushl	$txtMostraQuarto
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	#SUITE
+	pushl 	(%edi)
+	pushl	$txtMostraSuite
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	#BANHEIRO
+	pushl 	(%edi)
+	pushl	$txtMostraBanheiro
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	#COZINHA
+	pushl 	%edi
+	pushl	$txtMostraCozinha
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	#SALA
+
+	pushl 	%edi
+	pushl	$txtMostraSala
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	#GARAGEM
+
+	pushl 	%edi
+	pushl	$txtMostraGaragem
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	RET
 
 removeReg:
 	call	mostraReg
@@ -259,8 +446,9 @@ removeReg:
 		movl 	(%edi), %eax
 		movl 	%eax, cabecaLista
 
-		# pushl	$enderecoRemove
-		# call 	free
+		pushl	enderecoRemove
+		call 	free
+		addl 	$4, %esp
 		RET
 
 	_removeMeio:
@@ -274,8 +462,9 @@ removeReg:
 		addl	$256,%ecx
 		movl	%edi, (%ecx)
 		
-		# pushl	$enderecoRemove
-		# call 	free
+		pushl	enderecoRemove
+		call 	free
+		addl 	$4, %esp
 
 		movl 	$NULL,%ebx
 		cmpl 	%eax, %ebx
@@ -532,7 +721,7 @@ leRegistro:
 		addl	$4, %esp # limpa o(s) pushl
 
 		popl	%edi
-		addl	$16, %edi  #faz o ponteiro andar pro final do campo
+		addl	$16, %edi  # faz o ponteiro andar pro final do campo
 
 		#Metragem
 
@@ -839,7 +1028,7 @@ mostraReg:
 	pushl 	$txtMostraNome
 	call 	printf
 	addl 	$8,%esp
-	addl 	$64, %edi #vai para o Próximo Campo
+	addl 	$64, %edi # vai para o Próximo Campo
 
 	#Nascimento
 	movl 	(%edi), %eax
@@ -854,7 +1043,7 @@ mostraReg:
 	pushl 	$txtMostraDataNasc
 	call	printf
 	addl	$16, %esp
-	addl	$4, %edi #vai para o Próximo Campo
+	addl	$4, %edi # vai para o Próximo Campo
 	
 	#Idade
 	movl 	(%edi), %eax
@@ -870,7 +1059,7 @@ mostraReg:
 	pushl 	$txtMostraCPF
 	call	printf
 	addl	$8,%esp
-	addl	$16,%edi #vai para o Próximo Campo
+	addl	$16,%edi # vai para o Próximo Campo
 
 	#METRAGEM
 	movl 	(%edi), %eax
@@ -878,7 +1067,7 @@ mostraReg:
 	pushl	$txtMostraMetragem
 	call	printf
 	addl 	$8, %esp
-	addl	$4, %edi #vai para o Próximo Campo
+	addl	$4, %edi # vai para o Próximo Campo
 
 	#DDD
 
@@ -887,7 +1076,7 @@ mostraReg:
 	call	printf
 	addl	$8, %esp
 
-	addl	$4, %edi #vai para o Próximo Campo
+	addl	$4, %edi # ai para o Próximo Campo
 
 	#TELEFONE
 
@@ -896,7 +1085,7 @@ mostraReg:
 	call	printf
 	addl	$8, %esp
 
-	addl	$16, %edi #vai para o Próximo Campo
+	addl	$16, %edi # vai para o Próximo Campo
 
 	#TIPO IMOVEL 
 
@@ -905,7 +1094,7 @@ mostraReg:
 	call	printf
 	addl	$8, %esp
 
-	addl	$12, %edi #vai para o Próximo Campo
+	addl	$12, %edi # vai para o Próximo Campo
 
 	#ENDERECO
 
@@ -921,7 +1110,7 @@ mostraReg:
 	pushl 	$txtMostraEndereco
 	call	printf
 	addl	$16, %esp
-	addl	$32, %edi #vai para o Próximo Campo
+	addl	$32, %edi # vai para o Próximo Campo
 
 	
 	#QUARTO
