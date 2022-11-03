@@ -51,6 +51,7 @@
 	txtMostraCozinha:	.asciz	"\nCozinha: %s"
 	txtMostraSala:		.asciz	"\nSala: %s"
 	txtMostraGaragem:	.asciz	"\nGaragem: %s"
+	txtMostraTotal:	.asciz	"\nNúmero de Comodos: %d"
 	txtMostraErroRemove:	.asciz	"\Registro Nao Existe \n"
 	
 	testando:			.asciz	"\nTESTANDO"
@@ -67,7 +68,7 @@
 	regParaRemover:		.int	0 	# número do registro que será removido. será comparado com os índices
 	limpaScan:			.space	10
 
-	tamanhoRegistro:  	.int 	260 # tamanho do registro
+	tamanhoRegistro:  	.int 	264 # tamanho do registro
 	tamanhoLista:		.int 	0	# tamanho da lista
 
 	cabecaLista:			.space  4	# cabeça da lista
@@ -79,6 +80,7 @@
     fimLista:   			.space 	4	# último endereço do registro
 
 	NULL:				.int 	0
+	numComodos:			.int 	0
 	posicaoAtual: 		.int	0	
 	iteracao:			.int	0	# número da iteração atual, será usada na remoção
 	
@@ -194,50 +196,20 @@ consultaReg:
 		movl registroConsultaAtual, %edi
 		movl $0, %eax
 
-		# acredito eu que pega o campo de quarto
-		addl 	$232, %edi
+	
+		addl 	$256, %edi 	# toral de comodos
 
-		# soma o número de quartos no eax
-		movl 	(%edi), %eax
-		call	TESTENUM
-		addl 	$4, %edi
-		# soma o número de suítes no eax
-		addl 	(%edi), %eax
-		call 	TESTENUM
-		addl 	$4, %edi
-		# soma o número de banheiros no eax
-		addl 	(%edi), %eax
-		call 	TESTENUM
-		addl 	$4, %edi
-		# soma o número de cozinhas no eax
-		addl 	(%edi), %eax
-		call 	TESTENUM
-		addl 	$4, %edi
-		# soma o número de salas no eax
-		addl 	(%edi), %eax
-		call 	TESTENUM
-		addl 	$4, %edi
-
+		movl 	(%edi),%eax
 		movl 	%eax, totalComodos
-		call	TESTENUM
-
-		pushl	comodosParaConsultar
-		pushl	$imprimeTipoNum
-		call 	printf
-		addl 	$8, %esp
-
-
 		# se a quantidade de comodos for igual ao que ele quer, mostra o registro completo
-		cmpl 	%eax, comodosParaConsultar
+		cmpl 	 comodosParaConsultar,%eax
 		jge 	_mostraRegistroConsulta
-
 		_trocaReg:
 			movl 	registroConsultaAtual, %edi
-			addl 	$256, %edi
+			addl 	$260, %edi
 			movl 	$NULL, %ebx
 			cmpl	%ebx, (%edi)
 			je		_fimConsulta
-
 			movl	(%edi), %ecx
 			movl	%ecx, registroConsultaAtual
 			jmp		_loopConsultaRegistro
@@ -411,7 +383,7 @@ removeReg:
 	movl 	$0, iteracao
 	movl 	cabecaLista, %edi
 	movl 	%edi, pai
-	addl 	$256, %edi # move o ponteiro pro próximo elemento
+	addl 	$260, %edi # move o ponteiro pro próximo elemento
 	movl 	(%edi), %ebx
 	movl	%ebx, filho
 	movl 	regParaRemover, %eax # guarda o "índice" do registro que será removido
@@ -432,7 +404,7 @@ removeReg:
 		addl 	$1,	%eax	# incrementa a iteracao
 		movl 	%eax, iteracao
 		movl 	%ebx, pai	# filho passa a ser pai
-		addl	$256, %ebx	# pega o filho do filho
+		addl	$260, %ebx	# pega o filho do filho
 		movl	(%ebx), %ecx	
 		movl 	%ecx, filho	# pega o filho do filho e faz ele ser pai
 		jmp		_loopRemove
@@ -442,7 +414,7 @@ removeReg:
 	_removePrimeiro:
 		movl	cabecaLista, %edi
 		movl 	%edi, enderecoRemove # usar o free nessa variável depois de mudar a cabeça
-		addl 	$256, %edi
+		addl 	$260, %edi
 		movl 	(%edi), %eax
 		movl 	%eax, cabecaLista
 
@@ -454,12 +426,12 @@ removeReg:
 	_removeMeio:
 		movl	filho, %edi
 		movl	%edi, enderecoRemove
-		addl	$256,%edi
+		addl	$260,%edi
 		movl	(%edi), %eax
 		movl	%eax,filho
 		movl	pai, %ecx
 		movl	filho, %edi
-		addl	$256,%ecx
+		addl	$260,%ecx
 		movl	%edi, (%ecx)
 		
 		pushl	enderecoRemove
@@ -499,7 +471,7 @@ limpaScanf:
 
 insereOrdenado:
 	movl  	inicioRegistro, %ecx # ecx guarda o registro atual
-	addl 	$232, %ecx # número de quartos de REG
+	addl 	$256, %ecx # número de quartos de REG
 
 	movl 	$NULL, %ebx
 	movl 	cabecaLista, %edi
@@ -509,27 +481,27 @@ insereOrdenado:
 	movl 	cabecaLista, %edi
 	movl 	%edi, pai
 	
-	addl 	$232, %edi # número de quartos do primeiro cara da lista
+	addl 	$256, %edi # número de quartos do primeiro cara da lista
 	movl 	(%edi),%eax
 	cmpl  	%eax,(%ecx)
 	jle 	_insereComoPrimeiro # novo registro vira o primeiro da lista
 	movl	pai,%edi
-	addl 	$256, %edi
+	addl 	$260, %edi
 	cmpl 	$NULL, (%edi)
 	je 		_insereFim
 	movl	pai,%edi
-	addl 	$256, %edi
+	addl 	$260, %edi
 	movl 	(%edi), %eax
 	movl 	%eax, filho
 	movl  	inicioRegistro, %ecx # ecx guarda o registro atual
-	addl 	$232, %ecx # número de quartos de REG
+	addl 	$256, %ecx # número de quartos de REG
 	_loopInsereOrdenado:
 		movl 	pai, %edi
 		movl 	filho, %ebx
 
-	 	addl 	$256, %edi
+	 	addl 	$260, %edi
 
-		addl 	$232, %ebx
+		addl 	$256, %ebx
 		movl 	(%ecx), %eax
 		cmpl 	(%ebx), %eax 
 		jle 	_insereAntesFilho
@@ -537,7 +509,7 @@ insereOrdenado:
 		movl 	%ebx, pai
 
 		movl	pai,%edi
-		addl 	$256, %edi
+		addl 	$260, %edi
 		cmpl 	$NULL, (%edi)
 		je 		_insereFim
 
@@ -552,7 +524,7 @@ insereOrdenado:
 		movl	inicioRegistro, %ecx
 		movl	%ecx, cabecaLista
 		movl	%ecx, fimLista
-		addl	$256, %ecx
+		addl	$260, %ecx
 		movl	$NULL, (%ecx)
 		movl	tamanhoLista,%ebx
 		addl	$1, %ebx
@@ -562,7 +534,7 @@ insereOrdenado:
 
 	_insereComoPrimeiro:
 		movl	inicioRegistro, %ecx #ECX Guarda o registro atual
-		addl	$256, %ecx # posição pra indicar o próximo
+		addl	$260, %ecx # posição pra indicar o próximo
 		movl	cabecaLista, %edi
 		movl	%edi, (%ecx) # faz o resto da lista ligar com reg
 		movl	inicioRegistro, %ecx #ECX Guarda o registro atual
@@ -576,10 +548,10 @@ insereOrdenado:
 	_insereFim:
 		movl 	pai, %edi
 		movl 	inicioRegistro, %ebx
-		addl 	$256, %edi
+		addl 	$260, %edi
 		movl 	%ebx, (%edi)
 		movl 	%ebx, fimLista
-		addl 	$256, %ebx	
+		addl 	$260, %ebx	
 		movl 	$NULL, (%ebx)
 		RET
 
@@ -587,9 +559,9 @@ insereOrdenado:
 		movl 	pai, %edi
 		movl 	filho, %ebx
 		movl 	inicioRegistro, %ecx
-		addl 	$256,%edi
+		addl 	$260,%edi
 		movl 	%ecx, (%edi)
-		addl 	$256,%ecx
+		addl 	$260,%ecx
 		movl 	%ebx, (%ecx)
 		movl 	tamanhoLista,%ebx
 		addl 	$1, %ebx
@@ -889,6 +861,8 @@ leRegistro:
 
 		addl	$4, %esp # limpa o(s) pushl
 		popl	%edi
+		movl	(%edi),%eax
+		movl	%eax, numComodos
 
 		
 		addl	$4, %edi # faz o ponteiro andar pro final do campo
@@ -912,7 +886,8 @@ leRegistro:
 
 		popl	%edi
 
-		
+		movl	(%edi),%eax
+		addl	%eax, numComodos
 		addl	$4, %edi # faz o ponteiro andar pro final do campo
 
 		pushl	stdin
@@ -933,7 +908,8 @@ leRegistro:
 		addl	$4, %esp # limpa o(s) pushl
 
 		popl	%edi
-
+		movl	(%edi),%eax
+		addl	%eax, numComodos
 		addl	$4, %edi # faz o ponteiro andar pro final do campo
 
 		pushl	stdin
@@ -1001,8 +977,9 @@ leRegistro:
 
 		addl	$4, %edi # faz o ponteiro andar pro final do campo
 
-
-		# fazer inserção ordenada
+		movl 	numComodos, %eax
+		movl	%eax,(%edi)
+		addl	$4, %edi # faz o ponteiro andar pro final do campo
 
 		movl 	$NULL,%eax
 		movl   	%eax, (%edi)
@@ -1157,6 +1134,14 @@ mostraReg:
 	addl 	$8, %esp
 	addl	$4, %edi
 
+	#Total
+	pushl 	(%edi)
+	pushl	$txtMostraTotal
+	call	printf
+	addl 	$8, %esp
+	addl	$4, %edi
+
+	#vai pro próximo
 	movl	(%edi), %eax
 	movl	$NULL, %ebx
 	cmpl	%eax, %ebx
