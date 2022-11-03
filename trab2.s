@@ -43,7 +43,7 @@
 	txtMostraDDD:		.asciz	"\nDDD: %s"
 	txtMostraTelefone:	.asciz	"\nTelefone: %s"
 	txtMostraTipoImovel: .asciz	"\nTipo do Imovel: %s"
-	txtMostraEndereco:	.asciz	"\nEndereco: \n Rua: %s \n Numero: %d \nBairro: %s"
+	txtMostraEndereco:	.asciz	"\nEndereco: \nRua: %s \nNumero: %d\nBairro: %s"
 	txtMostraMetragem:	.asciz	"\nMetragem: %d"
 	txtMostraQuarto:	.asciz	"\nQuarto: %d"
 	txtMostraSuite:		.asciz	"\nSuite: %d"
@@ -51,7 +51,7 @@
 	txtMostraCozinha:	.asciz	"\nCozinha: %s"
 	txtMostraSala:		.asciz	"\nSala: %s"
 	txtMostraGaragem:	.asciz	"\nGaragem: %s"
-	txtMostraTotal:	.asciz	"\nNúmero de Comodos: %d"
+	txtMostraTotal:  	.asciz	"\nNúmero de Comodos: %d"
 	txtMostraErroRemove:	.asciz	"\Registro Nao Existe \n"
 	
 	testando:			.asciz	"\nTESTANDO"
