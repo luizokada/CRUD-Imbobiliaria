@@ -1,6 +1,5 @@
 .section .data
 	txtAbertura: 		.asciz 	"\n*** Controle de Imobiliária ***\n"
-	txtContinuar: 		.asciz 	"\nDeseja continuar?\n <1> Sim  <2> Não\n"
 
     menuOp: 	    	.asciz 	"\nSelecione uma opção:\n <1> - Inserir registro \n <2> - Consultar registro\n <3> - Remover registro \n <4> - Relatório de registros \n <5> - Gravar registro \n <6> - Recuperar registro \n <7> - Sair \n"
 
@@ -27,13 +26,11 @@
     txtPedeGaragem:		.asciz	"\nTem garagem? <S> Sim <N> Não " #4bytes 
 	
 
-	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " #12bytes
+	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " 
+
 	txtPedeRegParaConsultar: .asciz "\nDigite o numero de comodos que quer consultar: "
 
 	txtListaVazia: 			.asciz "\nLISTA ESTA SEM REGISTROS \n "
-
-
-	
 
 	txtMostraRegistro:	 .asciz	"\nRegistro %d: \n "
 	txtMostraReg:		 .asciz	"\nRegistro lido: "
@@ -56,9 +53,6 @@
 	txtMostraTotal:  	 .asciz	"\nNúmero de Comodos: %d"
 	txtMostraErroRemove:	.asciz	"\Registro Nao Existe \n"
 	
-	testando:			.asciz	"\nTESTANDO"
-	testandoNum:		.asciz	"\n%d\n"
-	testandoStr:		.asciz	"\n%s\n"
 
 	tipoNum: 			.asciz 	"%d"
 	imprimeTipoNum: 	.asciz 	"%d\n"
@@ -1304,15 +1298,9 @@ recuperaReg:
 		cmpl 	$0,%ebx
 		je		_setCabecaLista
 		_encadeiaLista:
-			movl	cabecaLista,%edi
-			movl	inicioRegistro, %eax
-			addl	$260,%eax
-			movl	%edi, (%eax)
-			movl	inicioRegistro, %eax
-			movl 	%eax, cabecaLista
-
+			call 	insereOrdenado
 		_resetLoopRecuperaReg:
-		jmp		_loopRecupera
+			jmp		_loopRecupera
 		
 
 
