@@ -199,12 +199,6 @@ resolveOpcoes:
     _recuperaReg:
 		call recuperaReg
         jmp resolveOpcoes
-TESTENUM:
-		pushl	%eax
-		pushl	$imprimeTipoNum
-		call 	printf
-		addl 	$8, %esp
-		RET
 
 consultaReg:
 	
@@ -1215,6 +1209,7 @@ gravaRegArq:
 	int 	$0x80
 	RET
 
+
 abreArqFinal:
 	movl 	SYS_OPEN, %eax 	# system call OPEN: retorna o descritor em %eax
 	movl 	$nomeArq, %ebx
@@ -1237,7 +1232,10 @@ fechaArq:
 abreArqLeitura:
 	movl 	SYS_OPEN, %eax 	# system call OPEN: retorna o descritor em %eax
 	movl 	$nomeArq, %ebx
-	movl 	O_RDONLY, %ecx
+	movl 	O_RDWR, %ecx
+	orl 	O_CREAT, %ecx
+	movl 	S_IRUSR, %edx
+	orl 	S_IWUSR, %edx
 	int 	$0x80
 	movl 	%eax, descritor # guarda o descritor
 	RET
@@ -1289,16 +1287,16 @@ recuperaReg:
 		je   	_fimRecuperaRegs
 		
 
-		movl	inicioRegistro, %eax
+		movl	inicioRegistro, %eax 
 		addl	$260,%eax
 		movl	$NULL,%ebx
-		movl	%ebx,(%eax)
+		movl	%ebx,(%eax)	#aponta o registro para NULL
 		movl	iteracao,%ebx
 	
 		cmpl 	$0,%ebx
 		je		_setCabecaLista
 		_encadeiaLista:
-			call 	insereOrdenado
+			call 	insereOrdenado #insere ordenadamente
 		_resetLoopRecuperaReg:
 			jmp		_loopRecupera
 		
@@ -1314,6 +1312,8 @@ _fimRecuperaRegs:
 	_fimTratamentoRecuperacao:
 		RET
 
+
+#inicializa a cabeca da lista
 _setCabecaLista:
 	movl	inicioRegistro,%eax
 	movl	%eax,cabecaLista
@@ -1325,6 +1325,7 @@ _setCabecaLista:
 	addl	$1,iteracao
 	jmp 	_loopRecupera
 
+#inicializa a cabeca da lista como NULL
 _setNullTocabeca:
 	movl	$NULL, %eax
 	movl	%eax,cabecaLista
