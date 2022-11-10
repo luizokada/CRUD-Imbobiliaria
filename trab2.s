@@ -30,6 +30,8 @@
 	txtPedeRegParaRemover: .asciz	"\nDigite o numero do registro para remover: " #12bytes
 	txtPedeRegParaConsultar: .asciz "\nDigite o numero de comodos que quer consultar: "
 
+	txtListaVazia: 			.asciz "\nLISTA ESTA SEM REGISTROS \n "
+
 
 	
 
@@ -69,7 +71,7 @@
 	limpaScan:			.space	10
 
 	tamanhoRegistro:  			.int 	264 # tamanho do registro
-	tamanhoRegistroArquivo:  	.int 	260 # tamanho do registro no arquivo
+	tamanhoRegistroArquivo:  	.int 	264 # tamanho do registro no arquivo
 	tamanhoLista:				.int 	0	# tamanho da lista
 
 	cabecaLista:			.space  4	# cabeça da lista
@@ -80,6 +82,8 @@
 	enderecoRemove:			.space 	4	# endereço do registro para remover
     fimLista:   			.space 	4	# último endereço do registro
 	
+
+	registro:			.space  264 
 	descritor:			.int 	0
 	NULL:				.int 	0
 	numComodos:			.int 	0
@@ -131,29 +135,24 @@ _start:
 	pushl	$txtAbertura
 	call	printf
 	addl	$4, %esp # limpa o(s) pushl
-	movl 	$NULL, %eax
-	movl 	%eax, cabecaLista
+	call	recuperaReg
 	call	resolveOpcoes
 	
 fim:
 	pushl $0
 	call exit
 
-printTeste:
-	pushl $testando
-	call printf
-	addl $4 , %esp
-	RET
 
 
 resolveOpcoes:
     pushl   $menuOp
 	call    printf
+	addl	$4,%esp
     pushl	$opcao
 	pushl	$tipoNum
 	call	scanf
 
-	addl	$12, %esp # limpa o(s) pushl
+	addl	$8, %esp # limpa o(s) pushl
 
 	# inserção
 	cmpl	$1, opcao
@@ -242,7 +241,7 @@ consultaReg:
 		movl 	%eax, totalComodos
 		# se a quantidade de comodos for igual ao que ele quer, mostra o registro completo
 		cmpl 	 comodosParaConsultar,%eax
-		jge 	_mostraRegistroConsulta
+		je 		_mostraRegistroConsulta
 		_trocaReg:
 			movl 	registroConsultaAtual, %edi
 			addl 	$260, %edi
@@ -1024,6 +1023,11 @@ mostraReg:
 	movl 	cabecaLista, %edi
 
 	movl 	$0, iteracao
+
+	movl	$NULL, %ebx
+	cmpl	%edi, %ebx
+	je		_fimMostraVazio
+
 	_initLoopMostra:
 
 	movl 	iteracao, %eax
@@ -1187,7 +1191,14 @@ mostraReg:
 	jmp 	_initLoopMostra
 
 	_fimMostra:
-	RET
+		RET
+	_fimMostraVazio:
+		pushl 	$txtListaVazia
+		call	printf
+		addl	$4,%esp
+		RET
+		
+
 
 
 abreArq:
@@ -1267,37 +1278,38 @@ recuperaReg:
 	call 	abreArqLeitura
 	movl	$0,iteracao
 	_loopRecupera:
-		movl 	SYS_READ, %eax # %eax retorna numero de bytes lidos
-		movl 	descritor, %ebx # recupera o descritor
-		movl 	$registroConsultaAtual, %ecx
-		movl 	tamanhoRegistroArquivo, %edx
-		int 	$0x80 # le registro do arquivo
-		cmpl 	$0, %eax
-		jle 	_fimRecuperaRegs
-		
+
 		pushl	tamanhoRegistro
 		call	malloc
 		movl	%eax, inicioRegistro
-		movl	$inicioRegistro, %eax
 		addl	$4,%esp
-		movl 	$registroConsultaAtual, %edi
+
+
+		movl 	SYS_READ, %eax # %eax retorna numero de bytes lidos
+		movl 	descritor, %ebx # recupera o descritor
+		movl 	inicioRegistro, %ecx
+		movl 	tamanhoRegistroArquivo, %edx
+		int 	$0x80 # le registro do arquivo
 	
-		movl 	%edi, (%eax)
-		movl	$inicioRegistro, %eax
+		cmpl 	$0, %eax
+		je   	_fimRecuperaRegs
+		
+
+		movl	inicioRegistro, %eax
+		addl	$260,%eax
+		movl	$NULL,%ebx
+		movl	%ebx,(%eax)
 		movl	iteracao,%ebx
 	
 		cmpl 	$0,%ebx
 		je		_setCabecaLista
 		_encadeiaLista:
-			movl	$inicioRegistro, %eax
+			movl	cabecaLista,%edi
+			movl	inicioRegistro, %eax
 			addl	$260,%eax
-			movl	$NULL,%ebx
-			movl	%ebx,(%eax)
-			movl	fimLista,%edi
-			movl	$inicioRegistro, %eax
-			addl	$260,%edi
-			movl	%eax, (%edi)
-			movl 	%eax, fimLista
+			movl	%edi, (%eax)
+			movl	inicioRegistro, %eax
+			movl 	%eax, cabecaLista
 
 		_resetLoopRecuperaReg:
 		jmp		_loopRecupera
@@ -1307,17 +1319,25 @@ recuperaReg:
 
 
 _fimRecuperaRegs:
-	movl 	SYS_CLOSE, %eax
-	movl 	descritor, %ebx # recupera o descritor
-	int 	$0x80
-	RET
+	call	fechaArq
+	movl	iteracao,%ebx
+	cmpl 	$0,%ebx
+	je		_setNullTocabeca
+	_fimTratamentoRecuperacao:
+		RET
 
 _setCabecaLista:
 	movl	inicioRegistro,%eax
 	movl	%eax,cabecaLista
 	movl	%eax,fimLista
-	movl	$inicioRegistro, %eax
+	movl	inicioRegistro, %eax
 	addl	$260,%eax
 	movl	$NULL,%ebx
 	movl	%ebx,(%eax)
-	jmp 	_encadeiaLista
+	addl	$1,iteracao
+	jmp 	_loopRecupera
+
+_setNullTocabeca:
+	movl	$NULL, %eax
+	movl	%eax,cabecaLista
+	jmp		_fimTratamentoRecuperacao
