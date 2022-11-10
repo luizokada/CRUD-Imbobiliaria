@@ -33,25 +33,25 @@
 
 	
 
-	txtMostraRegistro:	.asciz	"\nRegistro %d: \n "
-	txtMostraReg:		.asciz	"\nRegistro lido: "
-	textoParaContinuar:	.asciz	"\nDigite qualquer caracter para continuar: "
-	txtMostraNome:		.asciz	"\nNome: %s"
-	txtMostraDataNasc:	.asciz	"\nData de nascimento: %d/%d/%d"
-	txtMostraIdade:		.asciz	"\nIdade: %d"
-	txtMostraCPF:		.asciz	"\nCPF: %s"
-	txtMostraDDD:		.asciz	"\nDDD: %s"
-	txtMostraTelefone:	.asciz	"\nTelefone: %s"
+	txtMostraRegistro:	 .asciz	"\nRegistro %d: \n "
+	txtMostraReg:		 .asciz	"\nRegistro lido: "
+	textoParaContinuar:	 .asciz	"\nDigite qualquer caracter para continuar: "
+	txtMostraNome:		 .asciz	"\nNome: %s"
+	txtMostraDataNasc:	 .asciz	"\nData de nascimento: %d/%d/%d"
+	txtMostraIdade:		 .asciz	"\nIdade: %d"
+	txtMostraCPF:		 .asciz	"\nCPF: %s"
+	txtMostraDDD:		 .asciz	"\nDDD: %s"
+	txtMostraTelefone:	 .asciz	"\nTelefone: %s"
 	txtMostraTipoImovel: .asciz	"\nTipo do Imovel: %s"
-	txtMostraEndereco:	.asciz	"\nEndereco: \nRua: %s \nNumero: %d\nBairro: %s"
-	txtMostraMetragem:	.asciz	"\nMetragem: %d"
-	txtMostraQuarto:	.asciz	"\nQuarto: %d"
-	txtMostraSuite:		.asciz	"\nSuite: %d"
-	txtMostraBanheiro:	.asciz	"\nBanheiro: %d"
-	txtMostraCozinha:	.asciz	"\nCozinha: %s"
-	txtMostraSala:		.asciz	"\nSala: %s"
-	txtMostraGaragem:	.asciz	"\nGaragem: %s"
-	txtMostraTotal:  	.asciz	"\nNúmero de Comodos: %d"
+	txtMostraEndereco:	 .asciz	"\nEndereco: \nRua: %s \nNumero: %d\nBairro: %s"
+	txtMostraMetragem:	 .asciz	"\nMetragem: %d"
+	txtMostraQuarto:	 .asciz	"\nQuarto: %d"
+	txtMostraSuite:		 .asciz	"\nSuite: %d"
+	txtMostraBanheiro:	 .asciz	"\nBanheiro: %d"
+	txtMostraCozinha:	 .asciz	"\nCozinha: %s"
+	txtMostraSala:		 .asciz	"\nSala: %s"
+	txtMostraGaragem:	 .asciz	"\nGaragem: %s"
+	txtMostraTotal:  	 .asciz	"\nNúmero de Comodos: %d"
 	txtMostraErroRemove:	.asciz	"\Registro Nao Existe \n"
 	
 	testando:			.asciz	"\nTESTANDO"
@@ -68,24 +68,62 @@
 	regParaRemover:		.int	0 	# número do registro que será removido. será comparado com os índices
 	limpaScan:			.space	10
 
-	tamanhoRegistro:  	.int 	264 # tamanho do registro
-	tamanhoLista:		.int 	0	# tamanho da lista
+	tamanhoRegistro:  			.int 	264 # tamanho do registro
+	tamanhoRegistroArquivo:  	.int 	260 # tamanho do registro no arquivo
+	tamanhoLista:				.int 	0	# tamanho da lista
 
 	cabecaLista:			.space  4	# cabeça da lista
 	inicioRegistro:			.space	4	# campo inicial do registro que está sendo inserido no momento
-	registroConsultaAtual:	.space 4 # registro que está sendo consultado
+	registroConsultaAtual:	.space 4 	# registro que está sendo consultado
 	pai:					.space	4	# registro antecessor 
 	filho:					.space	4	# registro sucessor
 	enderecoRemove:			.space 	4	# endereço do registro para remover
     fimLista:   			.space 	4	# último endereço do registro
-
+	
+	descritor:			.int 	0
 	NULL:				.int 	0
 	numComodos:			.int 	0
 	posicaoAtual: 		.int	0	
 	iteracao:			.int	0	# número da iteração atual, será usada na remoção
-	
+	nomeArq:			.asciz	"registros.txt"
 	comodosParaConsultar: .int	0
 	totalComodos:		.int	0
+
+	# chamadas ao sistema, devendo serem passadas no registrador %eax
+
+	SYS_EXIT: 	.int 1
+	SYS_FORK: 	.int 2
+	SYS_READ: 	.int 3
+	SYS_WRITE: 	.int 4
+	SYS_OPEN: 	.int 5
+	SYS_CLOSE: 	.int 6
+	SYS_CREAT: 	.int 8
+
+	# Constantes de configuração do parametro flag da chamada open()
+	O_RDONLY: .int 0x0000 # somente leitura
+	O_WRONLY: .int 0x0001 # somente escrita
+	O_RDWR:   .int 0x0002 # leitura e escrita
+	O_CREAT:  .int 0x0040 # cria o arquivo na abertura, caso ele não exista
+	O_EXCL:   .int 0x0080 # força a criação
+	O_APPEND: .int 0x0400 # posiciona o cursor do arquivo no final, para adição
+	O_TRUNC:  .int 0x0200 # reseta o arquivo aberto, deixando com tamanho 0 (zero)
+
+# Constantes de configuração do parametro mode da chamada open().
+
+	S_IRWXU: .int 0x01C0# user (file owner) has read, write and execute permission
+	S_IRUSR: .int 0x0100 # user has read permission
+	S_IWUSR: .int 0x0080 # user has write permission
+	S_IXUSR: .int 0x0040 # user has execute permission
+	S_IRWXG: .int 0x0038 # group has read, write and execute permission
+	S_IRGRP: .int 0x0020 # group has read permission
+	S_IWGRP: .int 0x0010 # group has write permission
+	S_IXGRP: .int 0x0008 # group has execute permission
+	S_IRWXO: .int 0x0007 # others have read, write and execute permission
+	S_IROTH: .int 0x0004 # others have read permission
+	S_IWOTH: .int 0x0002 # others have write permission
+	S_IXOTH: .int 0x0001 # others have execute permission
+	S_NADA:  .int 0x0000 # não altera a situação
+
 
 .section .text
 .globl _start
@@ -176,6 +214,7 @@ TESTENUM:
 		RET
 
 consultaReg:
+	
 	pushl 	$txtPedeRegParaConsultar
 	call 	printf
 	addl 	$4, %esp
@@ -451,13 +490,6 @@ removeReg:
 		call	printf
 		addl	$4,%esp
 		RET
-
-
-recuperaReg:
-RET
-
-gravaReg:
-RET
 
 
 # limpa o scanf por conta dos \n que sobram na pilha
@@ -1151,11 +1183,141 @@ mostraReg:
 	movl	$iteracao, %ebx
 	movl	%eax, (%ebx)
 	movl	(%edi), %eax	
-	movl 	%eax,%edi
-	
+	movl 	%eax,%edi	
 	jmp 	_initLoopMostra
-
-
 
 	_fimMostra:
 	RET
+
+
+abreArq:
+	movl 	SYS_OPEN, %eax 	# system call OPEN: retorna o descritor em %eax
+	movl 	$nomeArq, %ebx
+	movl 	O_WRONLY, %ecx
+	orl 	O_CREAT, %ecx
+	orl 	O_TRUNC, %ecx
+	movl 	S_IRUSR, %edx
+	orl 	S_IWUSR, %edx
+	int 	$0x80
+	movl 	%eax, descritor # guarda o descritor
+	RET
+
+gravaRegArq:
+	movl 	SYS_WRITE, %eax
+	movl 	descritor, %ebx # recupera o descritor
+	movl 	registroConsultaAtual, %ecx
+	movl 	tamanhoRegistroArquivo, %edx
+	int 	$0x80
+	RET
+
+abreArqFinal:
+	movl 	SYS_OPEN, %eax 	# system call OPEN: retorna o descritor em %eax
+	movl 	$nomeArq, %ebx
+	movl 	O_WRONLY, %ecx
+	orl 	O_CREAT, %ecx
+	orl 	O_APPEND, %ecx
+	movl 	S_IRUSR, %edx
+	orl 	S_IWUSR, %edx
+	int 	$0x80
+	movl 	%eax, descritor # guarda o descritor
+	RET
+
+fechaArq:
+	movl 	SYS_CLOSE, %eax
+	movl 	descritor, %ebx # recupera o descritor
+	int 	$0x80
+	RET
+
+
+abreArqLeitura:
+	movl 	SYS_OPEN, %eax 	# system call OPEN: retorna o descritor em %eax
+	movl 	$nomeArq, %ebx
+	movl 	O_RDONLY, %ecx
+	int 	$0x80
+	movl 	%eax, descritor # guarda o descritor
+	RET
+
+gravaReg:
+	call	abreArq
+	call 	fechaArq
+	movl 	cabecaLista, %edi
+	movl 	%edi, registroConsultaAtual
+	_loopGrava:
+		call	abreArqFinal
+		movl	registroConsultaAtual,%edi
+		movl	$NULL, %eax
+		cmpl 	%eax, %edi
+		je		_fimGrava
+		call	gravaRegArq
+		movl	registroConsultaAtual,%edi
+		addl	$260,%edi
+		movl	(%edi),%ebx
+		movl 	%ebx, registroConsultaAtual
+		jmp		_loopGrava
+
+	
+	
+	
+	RET
+_fimGrava:
+	call	fechaArq
+	RET
+
+recuperaReg:
+	call 	abreArqLeitura
+	movl	$0,iteracao
+	_loopRecupera:
+		movl 	SYS_READ, %eax # %eax retorna numero de bytes lidos
+		movl 	descritor, %ebx # recupera o descritor
+		movl 	$registroConsultaAtual, %ecx
+		movl 	tamanhoRegistroArquivo, %edx
+		int 	$0x80 # le registro do arquivo
+		cmpl 	$0, %eax
+		jle 	_fimRecuperaRegs
+		
+		pushl	tamanhoRegistro
+		call	malloc
+		movl	%eax, inicioRegistro
+		movl	$inicioRegistro, %eax
+		addl	$4,%esp
+		movl 	$registroConsultaAtual, %edi
+	
+		movl 	%edi, (%eax)
+		movl	$inicioRegistro, %eax
+		movl	iteracao,%ebx
+	
+		cmpl 	$0,%ebx
+		je		_setCabecaLista
+		_encadeiaLista:
+			movl	$inicioRegistro, %eax
+			addl	$260,%eax
+			movl	$NULL,%ebx
+			movl	%ebx,(%eax)
+			movl	fimLista,%edi
+			movl	$inicioRegistro, %eax
+			addl	$260,%edi
+			movl	%eax, (%edi)
+			movl 	%eax, fimLista
+
+		_resetLoopRecuperaReg:
+		jmp		_loopRecupera
+		
+
+
+
+
+_fimRecuperaRegs:
+	movl 	SYS_CLOSE, %eax
+	movl 	descritor, %ebx # recupera o descritor
+	int 	$0x80
+	RET
+
+_setCabecaLista:
+	movl	inicioRegistro,%eax
+	movl	%eax,cabecaLista
+	movl	%eax,fimLista
+	movl	$inicioRegistro, %eax
+	addl	$260,%eax
+	movl	$NULL,%ebx
+	movl	%ebx,(%eax)
+	jmp 	_encadeiaLista
