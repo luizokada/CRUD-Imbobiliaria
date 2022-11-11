@@ -212,7 +212,7 @@ consultaReg:
 	addl 	$8, %esp
 	movl 	cabecaLista, %edi
 	movl 	$NULL, %ebx
-	cmpl 	%ebx, (%edi)
+	cmpl 	%ebx, %edi
 	je		_fimConsulta
 
 	movl 	%edi, registroConsultaAtual
@@ -390,10 +390,19 @@ mostraRegistroConsulta:
 
 removeReg:
 	call	mostraReg
+
+	
+	#verifica se a lista ta vazia
+	movl 	$NULL, %ecx
+	movl	cabecaLista, %eax
+	cmpl	%ecx,%eax
+	je 		_fimRemoveListaVazia
+	
 	pushl	$txtPedeRegParaRemover
 	call	printf
 	addl	$4,%esp
-	
+
+
 	# número do registro que será removido
 	pushl	$regParaRemover
 	pushl 	$tipoNum
@@ -443,7 +452,6 @@ removeReg:
 		addl 	$260, %edi
 		movl 	(%edi), %eax
 		movl 	%eax, cabecaLista
-
 		pushl	enderecoRemove
 		call 	free
 		addl 	$4, %esp
@@ -478,6 +486,8 @@ removeReg:
 		addl	$4,%esp
 		RET
 
+	_fimRemoveListaVazia:
+		RET
 
 # limpa o scanf por conta dos \n que sobram na pilha
 limpaScanf:
